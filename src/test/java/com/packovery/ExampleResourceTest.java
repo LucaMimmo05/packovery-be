@@ -1,20 +1,21 @@
 package com.packovery;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.is;
 
 @QuarkusTest
 class ExampleResourceTest {
     @Test
-    void testHelloEndpoint() {
+    void testAuthEndpointExists() {
         given()
-                .when().get("/hello")
+                .contentType(ContentType.JSON)
+                .body("{\"email\":\"test@example.com\", \"password\":\"password\"}")
+                .when().post("/api/auth/login")
                 .then()
-                .statusCode(200)
-                .body(is("Hello from Quarkus REST"));
+                .statusCode(403);
     }
 
 }
