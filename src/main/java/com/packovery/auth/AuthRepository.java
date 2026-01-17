@@ -35,4 +35,14 @@ public class AuthRepository implements PanacheRepository<User> {
             user.setBlockedUntil(null);
         }
     }
+
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    public void unblockUser(Long userId) {
+        User user = User.findById(userId);
+        if (user == null) return;
+
+        user.setAccountStatus(UserStatus.ACTIVE);
+        user.setBlockedUntil(null);
+        user.setFailedAttempts(0);
+    }
 }
