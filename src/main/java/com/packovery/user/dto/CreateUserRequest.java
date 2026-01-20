@@ -11,6 +11,10 @@ public class CreateUserRequest {
     @Email(message = "Formato email non valido")
     private String email;
 
+    private String firstName;
+
+    private String lastName;
+
     @NotBlank(message = "La password è obbligatoria")
     @Size(min = 8, message = "La password deve essere di almeno 8 caratteri")
     private String password;
@@ -31,6 +35,22 @@ public class CreateUserRequest {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getPassword() {
