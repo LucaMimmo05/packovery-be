@@ -5,6 +5,7 @@ import com.packovery.common.enums.PackageSize;
 import com.packovery.common.enums.PackageWeight;
 import com.packovery.location.OrderLocation;
 import com.packovery.user.User;
+import com.packovery.vehicle.Vehicle;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -22,6 +23,10 @@ public class Order extends PanacheEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "rider_id")
     private User rider;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vehicle_id")
+    private Vehicle vehicle;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -88,6 +93,14 @@ public class Order extends PanacheEntity {
 
     public void setRider(User rider) {
         this.rider = rider;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 
     public OrderStatus getStatus() {

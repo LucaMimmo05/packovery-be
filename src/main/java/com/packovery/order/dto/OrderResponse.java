@@ -1,7 +1,8 @@
 package com.packovery.order.dto;
 
 import com.packovery.common.enums.OrderStatus;
-import com.packovery.location.OrderLocation;
+import com.packovery.common.enums.PackageSize;
+import com.packovery.common.enums.PackageWeight;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,11 +14,11 @@ public class OrderResponse {
     private String pickUpProvince;
     private String deliveryCity;
     private String deliveryProvince;
-    private BigDecimal weight;
-    private BigDecimal size;
+    private PackageWeight weight;
+    private PackageSize size;
     private LocalDateTime creationDate;
 
-    public OrderResponse(Long id, OrderStatus status, String pickUpCity, String pickUpProvince, String deliveryCity, String deliveryProvince, BigDecimal weight, BigDecimal size, LocalDateTime creationDate) {
+    public OrderResponse(Long id, OrderStatus status, String pickUpCity, String pickUpProvince, String deliveryCity, String deliveryProvince, PackageWeight weight, PackageSize size, LocalDateTime creationDate) {
         this.id = id;
         this.status = status;
         this.pickUpCity = pickUpCity;
@@ -78,19 +79,19 @@ public class OrderResponse {
         this.deliveryProvince = deliveryProvince;
     }
 
-    public BigDecimal getWeight() {
+    public PackageWeight getWeight() {
         return weight;
     }
 
-    public void setWeight(BigDecimal weight) {
+    public void setWeight(PackageWeight weight) {
         this.weight = weight;
     }
 
-    public BigDecimal getSize() {
+    public PackageSize getSize() {
         return size;
     }
 
-    public void setSize(BigDecimal size) {
+    public void setSize(PackageSize size) {
         this.size = size;
     }
 
