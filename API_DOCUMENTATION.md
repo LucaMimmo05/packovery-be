@@ -295,6 +295,212 @@ requestPasswordReset('user@example.com')
 
 ---
 
+## Gestione Utenti
+
+### 👤 Crea Utente
+
+**Endpoint:** `POST /api/users`
+
+Crea un nuovo utente nel sistema.
+
+#### Richiesta
+
+**Headers:**
+```
+Content-Type: application/json
+Accept: application/json
+```
+
+**Body (JSON):**
+```json
+{
+  "email": "string (obbligatorio, formato email)",
+  "password": "string (obbligatorio, minimo 8 caratteri)",
+  "role": "USER | CUSTOMER_CARE | RIDER (opzionale, default: USER)"
+}
+```
+
+#### Risposta di Successo
+
+**Status Code:** `201 Created`
+
+**Body (JSON):**
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "role": "USER",
+  "accountStatus": "ACTIVE",
+  "failedAttempts": 0,
+  "blockedUntil": null
+}
+```
+
+#### Risposte di Errore
+
+**409 Conflict - Email già esistente:**
+```json
+{
+  "message": "Un utente con questa email esiste già"
+}
+```
+
+**400 Bad Request - Dati non validi:**
+```json
+{
+  "message": "L'email è obbligatoria / La password deve essere di almeno 8 caratteri"
+}
+```
+
+#### Esempio di Utilizzo
+
+**JavaScript (fetch):**
+```javascript
+fetch('http://localhost:8080/api/users', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    email: 'newuser@example.com',
+    password: 'password123',
+    role: 'USER'
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+---
+
+### 👥 Ottieni Tutti gli Utenti
+
+**Endpoint:** `GET /api/users`
+
+Recupera la lista di tutti gli utenti registrati.
+
+#### Risposta di Successo
+
+**Status Code:** `200 OK`
+
+**Body (JSON):**
+```json
+[
+  {
+    "id": 1,
+    "email": "user1@example.com",
+    "role": "USER",
+    "accountStatus": "ACTIVE",
+    "failedAttempts": 0,
+    "blockedUntil": null
+  },
+  {
+    "id": 2,
+    "email": "rider@example.com",
+    "role": "RIDER",
+    "accountStatus": "ACTIVE",
+    "failedAttempts": 1,
+    "blockedUntil": null
+  }
+]
+```
+
+#### Esempio di Utilizzo
+
+**JavaScript (fetch):**
+```javascript
+fetch('http://localhost:8080/api/users')
+.then(response => response.json())
+.then(users => console.log(users));
+```
+
+---
+
+### 👤 Ottieni Utente per ID
+
+**Endpoint:** `GET /api/users/{id}`
+
+Recupera un utente specifico tramite il suo ID.
+
+#### Parametri Path
+
+- `id` (long): ID dell'utente
+
+#### Risposta di Successo
+
+**Status Code:** `200 OK`
+
+**Body (JSON):**
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "role": "USER",
+  "accountStatus": "ACTIVE",
+  "failedAttempts": 0,
+  "blockedUntil": null
+}
+```
+
+#### Risposte di Errore
+
+**404 Not Found - Utente non trovato:**
+```json
+{
+  "message": "Utente non trovato"
+}
+```
+
+#### Esempio di Utilizzo
+
+**JavaScript (fetch):**
+```javascript
+fetch('http://localhost:8080/api/users/1')
+.then(response => response.json())
+.then(user => console.log(user));
+```
+
+---
+
+### 🗑️ Elimina Utente
+
+**Endpoint:** `DELETE /api/users/{id}`
+
+Elimina un utente dal sistema.
+
+#### Parametri Path
+
+- `id` (long): ID dell'utente da eliminare
+
+#### Risposta di Successo
+
+**Status Code:** `204 No Content`
+
+#### Risposte di Errore
+
+**404 Not Found - Utente non trovato:**
+```json
+{
+  "message": "Utente non trovato"
+}
+```
+
+#### Esempio di Utilizzo
+
+**JavaScript (fetch):**
+```javascript
+fetch('http://localhost:8080/api/users/1', {
+  method: 'DELETE'
+})
+.then(response => {
+  if (response.ok) {
+    console.log('Utente eliminato con successo');
+  }
+});
+```
+
+---
+
 ## Modelli di Dati
 
 ### User (Utente)
