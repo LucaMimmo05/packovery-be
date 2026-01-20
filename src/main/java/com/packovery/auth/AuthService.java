@@ -24,8 +24,6 @@ import java.time.LocalDateTime;
 @ApplicationScoped
 public class AuthService {
 
-    @Inject
-    AuthRepository authRepository;
 
     @Inject
     JwtService jwtService;
@@ -38,7 +36,7 @@ public class AuthService {
 
     @Transactional
     public LoginResponse login(String email, String password) {
-        User user = authRepository.findByEmail(email.toLowerCase());
+        User user = User.findByEmail(email.toLowerCase());
 
         if (user == null) throw new NotFoundException("Utente non trovato.");
 
@@ -49,11 +47,11 @@ public class AuthService {
 
         if (!BcryptUtil.matches(password, user.getPasswordHash())) {
             int attempts = user.getFailedAttempts() + 1;
-            authRepository.blockUser(user.id, attempts);
+            User.blockUser(user.id, attempts);
             throw new UnauthorizedException("Credenziali non valide.");
         }
 
-        authRepository.blockUser(user.id, 0);
+        User.blockUser(user.id, 0);
 
         String token = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
@@ -83,7 +81,7 @@ public class AuthService {
                         minutesLeft
                 );
             } else {
-                authRepository.unblockUser(user.id);
+                User.unblockUser(user.id);
                 user.setAccountStatus(UserStatus.ACTIVE);
                 user.setBlockedUntil(null);
                 user.setFailedAttempts(0);
@@ -103,7 +101,7 @@ public class AuthService {
             }
 
             String email = jwt.getSubject();
-            User user = authRepository.findByEmail(email);
+            User user = User.findByEmail(email);
 
             if (user == null) {
                 throw new NotFoundException("Utente non trovato");
@@ -125,7 +123,7 @@ public class AuthService {
 
 
     public User findUserByEmail(String email) {
-        return authRepository.findByEmail(email.toLowerCase());
+        return User.findByEmail(email.toLowerCase());
     }
 
 
@@ -153,7 +151,7 @@ public class AuthService {
                     .build();
         }
 
-        User user = authRepository.findByEmail(request.getEmail().toLowerCase());
+        User user = User.findByEmail(request.getEmail().toLowerCase());
         if (user == null) {
             return Response.status(404)
                     .entity("Utente non trovato.")
