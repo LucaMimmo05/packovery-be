@@ -29,7 +29,9 @@ Accept: application/json
 ```json
 {
   "email": "string (obbligatorio, formato email)",
-  "password": "string (obbligatorio)"
+  "password": "string (obbligatorio)",
+  "firstName": "string (opzionale, verrà salvato se l'utente non ha già un firstName)",
+  "lastName": "string (opzionale, verrà salvato se l'utente non ha già un lastName)"
 }
 ```
 
@@ -356,16 +358,18 @@ Accept: application/json
 
 **JavaScript (fetch):**
 ```javascript
-fetch('http://localhost:8080/api/users', {
+fetch('http://localhost:8080/api/auth/login', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    email: 'newuser@example.com',
+    email: 'user@example.com',
     password: 'password123',
-    role: 'USER'
+    firstName: 'Mario',  // Opzionale
+    lastName: 'Rossi'    // Opzionale
   })
+})
 })
 .then(response => response.json())
 .then(data => console.log(data));
@@ -501,6 +505,188 @@ fetch('http://localhost:8080/api/users/1', {
 
 ---
 
+## Gestione Ordini
+
+### 📦 Crea Ordine
+
+**Endpoint:** `POST /api/orders`
+
+Crea un nuovo ordine nel sistema.
+
+#### Richiesta
+
+**Headers:**
+```
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer <token> (richiesto CUSTOMER_CARE role)
+```
+
+**Body (JSON):**
+```json
+{
+  "senderId": "number (obbligatorio)",
+  "riderId": "number (opzionale)",
+  "vehicleId": "number (opzionale)", 
+  "packageSize": "S | M | L | XL (obbligatorio)",
+  "packageWeight": "S | M | L | XL (obbligatorio)",
+  "actualWeight": "number (opzionale)",
+  "actualSize": "number (opzionale)",
+  "pickupCity": "string (opzionale)",
+  "pickupProvince": "string (opzionale)",
+  "deliveryCity": "string (opzionale)",
+  "deliveryProvince": "string (opzionale)"
+}
+```
+
+#### Risposta di Successo
+
+**Status Code:** `201 Created`
+
+**Body (JSON):**
+```json
+{
+  "orderId": 1,
+  "creatorFirstName": "Mario",
+  "creatorLastName": "Rossi",
+  "orderStatus": "ASSIGNED",
+  "packageWeight": 2.5,
+  "packageSize": 25.0,
+  "riderFirstName": "Luigi",
+  "riderLastName": "Verdi",
+  "estimatedArrival": "2026-01-21T14:30:00",
+  "vehicleType": "SCOOTER",
+  "vehicleLicensePlate": "AB123CD"
+}
+```
+
+#### Esempio di Utilizzo
+
+**JavaScript (fetch):**
+```javascript
+fetch('http://localhost:8080/api/orders', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + token
+  },
+  body: JSON.stringify({
+    senderId: 1,
+    riderId: 51,
+    packageSize: 'M',
+    packageWeight: 'M', 
+    actualWeight: 2.5,
+    actualSize: 25.0,
+    pickupCity: 'Milano',
+    pickupProvince: 'MI',
+    deliveryCity: 'Roma',
+    deliveryProvince: 'RM'
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+---
+
+### 📋 Ottieni Tutti gli Ordini
+
+**Endpoint:** `GET /api/orders`
+
+Recupera la lista di tutti gli ordini con filtri opzionali.
+
+#### Parametri Query (tutti opzionali)
+
+- `id` (number): Filtra per ID specifico
+- `status` (OrderStatus): `PENDING | ASSIGNED | IN_TRANSIT | DELIVERED | CANCELLED | FAILED | RETURNED`
+- `pickUpCity` (string): Filtra per città di ritiro  
+- `pickUpProvince` (string): Filtra per provincia di ritiro
+- `deliveryCity` (string): Filtra per città di consegna
+- `deliveryProvince` (string): Filtra per provincia di consegna
+- `weight` (PackageWeight): `S | M | L | XL`
+- `size` (PackageSize): `S | M | L | XL` 
+- `createdAt` (string): Filtra per data di creazione (formato ISO)
+
+#### Risposta di Successo
+
+**Status Code:** `200 OK`
+
+**Body (JSON):**
+```json
+[
+  {
+    "id": 1,
+    "status": "ASSIGNED",
+    "pickUpCity": "Milano",
+    "pickUpProvince": "MI", 
+    "deliveryCity": "Roma",
+    "deliveryProvince": "RM",
+    "weight": "M",
+    "size": "M",
+    "creationDate": "2026-01-20T12:30:00"
+  }
+]
+```
+
+#### Esempi di Utilizzo
+
+**JavaScript (fetch):**
+```javascript
+// Tutti gli ordini
+fetch('http://localhost:8080/api/orders')
+.then(response => response.json())
+.then(orders => console.log(orders));
+
+// Filtri specifici
+fetch('http://localhost:8080/api/orders?status=PENDING&weight=M&pickUpCity=Milano')
+.then(response => response.json()) 
+.then(orders => console.log(orders));
+```
+
+---
+
+### 📦 Ottieni Dettagli Ordine
+
+**Endpoint:** `GET /api/orders/{id}`
+
+Recupera i dettagli completi di un ordine specifico.
+
+#### Parametri Path
+
+- `id` (number): ID dell'ordine
+
+#### Risposta di Successo
+
+**Status Code:** `200 OK`
+
+**Body (JSON):**
+```json
+{
+  "orderId": 1,
+  "creatorFirstName": "Mario",
+  "creatorLastName": "Rossi", 
+  "orderStatus": "IN_TRANSIT",
+  "packageWeight": 2.5,
+  "packageSize": 25.0,
+  "riderFirstName": "Luigi",
+  "riderLastName": "Verdi",
+  "estimatedArrival": "2026-01-21T14:30:00",
+  "vehicleType": "SCOOTER", 
+  "vehicleLicensePlate": "AB123CD"
+}
+```
+
+#### Esempio di Utilizzo
+
+**JavaScript (fetch):**
+```javascript
+fetch('http://localhost:8080/api/orders/1')
+.then(response => response.json())
+.then(order => console.log(order));
+```
+
+---
+
 ## Modelli di Dati
 
 ### User (Utente)
@@ -509,6 +695,8 @@ fetch('http://localhost:8080/api/users/1', {
 {
   "id": "long",
   "email": "string",
+  "firstName": "string | null",
+  "lastName": "string | null", 
   "passwordHash": "string",
   "role": "USER | CUSTOMER_CARE | RIDER",
   "accountStatus": "ACTIVE | TEMP_BLOCKED | PERM_BLOCKED",
@@ -522,7 +710,9 @@ fetch('http://localhost:8080/api/users/1', {
 ```json
 {
   "email": "string (obbligatorio, formato email)",
-  "password": "string (obbligatorio)"
+  "password": "string (obbligatorio)",
+  "firstName": "string (opzionale)",
+  "lastName": "string (opzionale)"
 }
 ```
 
@@ -659,7 +849,107 @@ Gli errori seguono generalmente questo formato:
 }
 ```
 
-Per account bloccati, viene restituito un oggetto `BlockedResponse` con informazioni dettagliate.
+### CreateOrderRequest
+
+```json
+{
+  "senderId": "number (obbligatorio)",
+  "riderId": "number (opzionale)",
+  "vehicleId": "number (opzionale)",
+  "packageSize": "PackageSize (S|M|L|XL, obbligatorio)",
+  "packageWeight": "PackageWeight (S|M|L|XL, obbligatorio)",
+  "actualWeight": "BigDecimal (opzionale)",
+  "actualSize": "BigDecimal (opzionale)",
+  "pickupCity": "string (opzionale)",
+  "pickupProvince": "string (opzionale)",
+  "deliveryCity": "string (opzionale)",
+  "deliveryProvince": "string (opzionale)"
+}
+```
+
+### OrderResponse
+
+```json
+{
+  "id": "long",
+  "status": "OrderStatus",
+  "pickUpCity": "string | null",
+  "pickUpProvince": "string | null",
+  "deliveryCity": "string | null", 
+  "deliveryProvince": "string | null",
+  "weight": "PackageWeight (S|M|L|XL)",
+  "size": "PackageSize (S|M|L|XL)",
+  "creationDate": "LocalDateTime"
+}
+```
+
+### OrderDetailResponse
+
+```json
+{
+  "orderId": "long",
+  "creatorFirstName": "string | null",
+  "creatorLastName": "string | null",
+  "orderStatus": "OrderStatus", 
+  "packageWeight": "BigDecimal",
+  "packageSize": "BigDecimal",
+  "riderFirstName": "string | null",
+  "riderLastName": "string | null",
+  "estimatedArrival": "LocalDateTime | null",
+  "vehicleType": "VehicleType | null",
+  "vehicleLicensePlate": "string | null"
+}
+```
+
+### UserResponse
+
+```json
+{
+  "id": "long",
+  "email": "string", 
+  "firstName": "string | null",
+  "lastName": "string | null",
+  "role": "UserRole",
+  "accountStatus": "UserStatus",
+  "failedAttempts": "integer",
+  "blockedUntil": "LocalDateTime | null"
+}
+```
+
+---
+
+## Enumerazioni
+
+### OrderStatus
+- **PENDING:** In attesa di assegnazione
+- **ASSIGNED:** Assegnato a un rider
+- **IN_TRANSIT:** In transito
+- **DELIVERED:** Consegnato
+- **CANCELLED:** Annullato
+- **FAILED:** Fallito
+- **RETURNED:** Restituito
+
+### PackageSize & PackageWeight
+- **S:** Small (1-15cm / 1g-1kg)
+- **M:** Medium (16-30cm / 1-3kg) 
+- **L:** Large (31-45cm / 3-5kg)
+- **XL:** Extra Large (46-100cm / 5-10kg)
+
+### VehicleType
+- **SCOOTER:** Scooter
+- **BIKE:** Bicicletta
+- **CAR:** Auto
+- **VAN:** Furgone
+
+### UserRole
+- **USER:** Utente standard
+- **CUSTOMER_CARE:** Assistenza clienti
+- **RIDER:** Corriere
+
+### UserStatus
+- **ACTIVE:** Account attivo
+- **TEMP_BLOCKED:** Bloccato temporaneamente
+- **PERM_BLOCKED:** Bloccato permanentemente
 
 ---
 
@@ -697,13 +987,16 @@ src/main/java/com/packovery/
 **Maintainer:** Team Packovery
 
 **Modifiche recenti:**
-- Implementazione sistema refresh token con doppia autenticazione
-- Aggiornamento endpoint `/api/auth/login` per restituire refresh token
-- Nuovo endpoint `/api/auth/refresh` per rinnovo token
-- **Nuovi endpoint reset password**: `/api/auth/request-reset-password` e `/api/auth/reset-password`
-- Sistema OTP sicuro per reset password con validazione a doppio livello
-- Sblocco automatico account temporaneamente bloccati alla scadenza
-- Esempi JavaScript completi per gestione autenticazione e reset password
+- ✅ **Gestione completa ordini**: Endpoint POST `/api/orders` per creazione ordini
+- ✅ **Endpoint ordini con filtri**: GET `/api/orders` con filtri avanzati per status, città, peso, dimensioni
+- ✅ **Dettagli ordini**: GET `/api/orders/{id}` per informazioni complete
+- ✅ **Login con firstName/lastName**: Endpoint login aggiornato per salvare nome e cognome opzionali
+- ✅ **Gestione utenti completa**: CRUD completo per utenti con firstName/lastName
+- ✅ **Sistema refresh token**: Doppia autenticazione con JWT e refresh token
+- ✅ **Reset password con OTP**: Sistema sicuro di reset password via email
+- ✅ **Filtri tipizzati**: Query parameters allineati con i tipi del database (enum)
+- ✅ **Entità tradotte**: Tutti i campi delle entità in inglese per consistenza
+- ✅ **Sblocco automatico**: Account temporaneamente bloccati si sbloccano automaticamente
 
 ---
 
