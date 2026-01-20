@@ -35,7 +35,7 @@ public class AuthService {
     EmailService emailService;
 
     @Transactional
-    public LoginResponse login(String email, String password) {
+    public LoginResponse login(String email, String password, String firstName, String lastName) {
         User user = User.findByEmail(email.toLowerCase());
 
         if (user == null) throw new NotFoundException("Utente non trovato.");
@@ -49,6 +49,21 @@ public class AuthService {
             int attempts = user.getFailedAttempts() + 1;
             User.blockUser(user.id, attempts);
             throw new UnauthorizedException("Credenziali non valide.");
+        }
+
+        // Aggiorna firstName e lastName se forniti e se non esistono già
+        boolean updated = false;
+        if (firstName != null && !firstName.trim().isEmpty() && user.getFirstName() == null) {
+            user.setFirstName(firstName.trim());
+            updated = true;
+        }
+        if (lastName != null && !lastName.trim().isEmpty() && user.getLastName() == null) {
+            user.setLastName(lastName.trim());
+            updated = true;
+        }
+
+        if (updated) {
+            user.persist();
         }
 
         User.blockUser(user.id, 0);

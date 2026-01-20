@@ -9,6 +9,8 @@ public class UserResponse {
 
     private Long id;
     private String email;
+    private String firstName;
+    private String lastName;
     private UserRole role;
     private UserStatus accountStatus;
     private int failedAttempts;
@@ -16,10 +18,12 @@ public class UserResponse {
 
     public UserResponse() {}
 
-    public UserResponse(Long id, String email, UserRole role, UserStatus accountStatus,
+    public UserResponse(Long id, String email, String firstName, String lastName, UserRole role, UserStatus accountStatus,
                        int failedAttempts, LocalDateTime blockedUntil) {
         this.id = id;
         this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.role = role;
         this.accountStatus = accountStatus;
         this.failedAttempts = failedAttempts;
@@ -40,6 +44,22 @@ public class UserResponse {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public UserRole getRole() {

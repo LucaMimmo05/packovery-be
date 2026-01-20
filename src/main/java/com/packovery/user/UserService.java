@@ -26,6 +26,8 @@ public class UserService {
 
         // Crea il nuovo utente
         User user = new User(request.getEmail(), hashedPassword, request.getRole());
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
         user.persist();
 
         return toResponse(user);
@@ -66,6 +68,8 @@ public class UserService {
         return new UserResponse(
                 user.id,
                 user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
                 user.getRole(),
                 user.getAccountStatus(),
                 user.getFailedAttempts(),

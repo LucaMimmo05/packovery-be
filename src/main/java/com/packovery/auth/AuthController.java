@@ -20,7 +20,8 @@ public class AuthController {
     @POST
     @Path("/login")
     public Object login(LoginRequest loginRequest) {
-        return authService.login(loginRequest.getEmail(), loginRequest.getPassword());
+        return authService.login(loginRequest.getEmail(), loginRequest.getPassword(),
+                                loginRequest.getFirstName(), loginRequest.getLastName());
     }
 
     @POST
