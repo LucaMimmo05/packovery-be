@@ -4,6 +4,7 @@ import com.packovery.common.enums.AlertType;
 import com.packovery.common.enums.IssueResolution;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -15,6 +16,7 @@ public class AlertService {
     @Inject
     AlertIssueRepository issueRepository;
 
+    @Transactional
     public void createAlert(Long orderId, String alertName, AlertType type) {
         AlertIssue issue = new AlertIssue();
         issue.alertId = UUID.randomUUID().toString();
@@ -27,6 +29,7 @@ public class AlertService {
         issueRepository.persist(issue);
     }
 
+    @Transactional
     public void resolveIssue(String alertId, Long adminId, String notes, boolean isAuto) {
         AlertIssue issue = issueRepository.find("alertId = ?1", alertId).firstResult();
 
