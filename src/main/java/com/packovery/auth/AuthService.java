@@ -1,7 +1,9 @@
 package com.packovery.auth;
 
 import com.packovery.auth.dto.BlockedResponse;
+import com.packovery.auth.dto.ForgotPasswordRequest;
 import com.packovery.auth.dto.LoginResponse;
+import com.packovery.auth.dto.ResetPasswordRequest;
 import com.packovery.common.enums.UserStatus;
 import com.packovery.common.exceptions.UserBlockedException;
 import com.packovery.security.JwtService;
@@ -12,6 +14,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.time.LocalDateTime;
 
@@ -20,15 +24,19 @@ import java.time.LocalDateTime;
 @ApplicationScoped
 public class AuthService {
 
-    @Inject
-    AuthRepository authRepository;
 
     @Inject
     JwtService jwtService;
 
+    @Inject
+    OtpService otpService;
+
+    @Inject
+    EmailService emailService;
+
     @Transactional
-    public LoginResponse login(String email, String password) {
-        User user = authRepository.findByEmail(email.toLowerCase());
+    public LoginResponse login(String email, String password, String firstName, String lastName) {
+        User user = User.findByEmail(email.toLowerCase());
 
         if (user == null) throw new NotFoundException("Utente non trovato.");
 
@@ -39,14 +47,30 @@ public class AuthService {
 
         if (!BcryptUtil.matches(password, user.getPasswordHash())) {
             int attempts = user.getFailedAttempts() + 1;
-            authRepository.blockUser(user.id, attempts);
+            User.blockUser(user.id, attempts);
             throw new UnauthorizedException("Credenziali non valide.");
         }
 
-        authRepository.blockUser(user.id, 0);
+        // Aggiorna firstName e lastName se forniti e se non esistono già
+        boolean updated = false;
+        if (firstName != null && !firstName.trim().isEmpty() && user.getFirstName() == null) {
+            user.setFirstName(firstName.trim());
+            updated = true;
+        }
+        if (lastName != null && !lastName.trim().isEmpty() && user.getLastName() == null) {
+            user.setLastName(lastName.trim());
+            updated = true;
+        }
+
+        if (updated) {
+            user.persist();
+        }
+
+        User.blockUser(user.id, 0);
 
         String token = jwtService.generateToken(user);
-        return new LoginResponse(token, "Login avvenuto con successo", user.getEmail());
+        String refreshToken = jwtService.generateRefreshToken(user);
+        return new LoginResponse(token, refreshToken, "Login avvenuto con successo", user.getEmail());
     }
 
     private BlockedResponse checkBlocked(User user) {
@@ -72,9 +96,87 @@ public class AuthService {
                         minutesLeft
                 );
             } else {
-                authRepository.blockUser(user.id, 0);
+                User.unblockUser(user.id);
+                user.setAccountStatus(UserStatus.ACTIVE);
+                user.setBlockedUntil(null);
+                user.setFailedAttempts(0);
             }
         }
         return null;
+    }
+
+    @Transactional
+    public LoginResponse refreshToken(String refreshToken) {
+        try {
+            JsonWebToken jwt = jwtService.validateRefreshToken(refreshToken);
+
+            String tokenType = jwt.getClaim("type");
+            if (!"refresh".equals(tokenType)) {
+                throw new UnauthorizedException("Token non valido");
+            }
+
+            String email = jwt.getSubject();
+            User user = User.findByEmail(email);
+
+            if (user == null) {
+                throw new NotFoundException("Utente non trovato");
+            }
+
+            BlockedResponse blocked = checkBlocked(user);
+            if (blocked != null) {
+                throw new UserBlockedException(blocked);
+            }
+
+            String newAccessToken = jwtService.generateToken(user);
+            String newRefreshToken = jwtService.generateRefreshToken(user);
+
+            return new LoginResponse(newAccessToken, newRefreshToken, "Token aggiornato con successo", user.getEmail());
+        } catch (Exception e) {
+            throw new UnauthorizedException("Refresh token non valido o scaduto");
+        }
+    }
+
+
+    public User findUserByEmail(String email) {
+        return User.findByEmail(email.toLowerCase());
+    }
+
+
+    public Response requestPasswordReset(ForgotPasswordRequest request) {
+        User user = findUserByEmail(request.getEmail());
+        if (user == null) return Response.status(Response.Status.NOT_FOUND).entity("Email Non Trovata").build();
+
+        String otp = otpService.generateOtp(user.getEmail());
+        emailService.sendOtpEmail(user.getEmail(), otp);
+
+        return Response.ok().build();
+    }
+
+    @Transactional
+    public Response resetPassword(ResetPasswordRequest request) {
+        if (!otpService.hasActiveResetRequest(request.getEmail())) {
+            return Response.status(400)
+                    .entity("Non è stata effettuata alcuna richiesta di reset password per questa email o la richiesta è scaduta.")
+                    .build();
+        }
+
+        if (!otpService.verifyOtp(request.getEmail(), request.getOtp())) {
+            return Response.status(400)
+                    .entity("OTP non valido.")
+                    .build();
+        }
+
+        User user = User.findByEmail(request.getEmail().toLowerCase());
+        if (user == null) {
+            return Response.status(404)
+                    .entity("Utente non trovato.")
+                    .build();
+        }
+
+        user.setPasswordHash(BcryptUtil.bcryptHash(request.getNewPassword()));
+
+        return Response.ok()
+                .entity("Password reimpostata con successo.")
+                .build();
     }
 }
