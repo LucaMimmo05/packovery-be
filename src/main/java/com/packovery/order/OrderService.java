@@ -28,10 +28,8 @@ public class OrderService {
 
     @Transactional
     public OrderDetailResponse createOrder(CreateOrderRequest request) {
-        // Genera un tracking code unico
         String trackingCode = "PKV" + System.currentTimeMillis();
 
-        // Crea l'ordine
         Order order = new Order(OrderStatus.PENDING, trackingCode, request.getSenderId());
         order.setPackageSize(request.getPackageSize());
         order.setPackageWeight(request.getPackageWeight());
@@ -41,7 +39,6 @@ public class OrderService {
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
 
-        // Assegna il rider se specificato
         if (request.getRiderId() != null) {
             User rider = User.findById(request.getRiderId());
             if (rider != null) {
@@ -50,7 +47,6 @@ public class OrderService {
             }
         }
 
-        // Assegna il veicolo se specificato
         if (request.getVehicleId() != null) {
             Vehicle vehicle = Vehicle.findById(request.getVehicleId());
             if (vehicle != null) {
@@ -60,7 +56,6 @@ public class OrderService {
 
         order.persist();
 
-        // Crea la location se specificata
         if (request.getPickupCity() != null || request.getDeliveryCity() != null) {
             OrderLocation location = new OrderLocation();
             location.setOrder(order);
@@ -130,7 +125,6 @@ public class OrderService {
                 params.and("createdAt", date);
                 params.and("createdAtEnd", date.plusDays(1));
             } catch (Exception e) {
-                // Ignora se il formato della data non è valido
             }
         }
 
