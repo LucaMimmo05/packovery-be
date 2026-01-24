@@ -33,14 +33,12 @@ public class AuthController {
 
    @POST
    @Path("/request-reset-password")
-   @Authenticated
     public Response requestResetPassword(ForgotPasswordRequest request) {
        return authService.requestPasswordReset(request);
    }
 
    @POST
    @Path("/reset-password")
-   @Authenticated
     public Response resetPassword(ResetPasswordRequest request) {
         return authService.resetPassword(request);
    }
