@@ -1,8 +1,8 @@
-package com.packovery.alert;
+package com.packovery.alert.dto;
 
 import com.packovery.common.enums.AlertType;
 
-public class CreateAlertRequest {
+public class CreateIssueRequest {
     public Long orderId;
     public String alertName;
     public AlertType type;
