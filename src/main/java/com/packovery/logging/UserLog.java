@@ -15,5 +15,8 @@ public class UserLog extends PanacheMongoEntity{
     public Instant eventTimestamp;
     public Instant userSessionStart;
     public Instant userSessionEnd;
-    public Map<String, Object> filtersUsed;
+    public Instant alertCreationTime;
+    public Instant messageSentTime;
+    public Boolean messageReadStatus;
+    public Map<String, Object> metadata;
 }
