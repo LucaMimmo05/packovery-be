@@ -1,6 +1,7 @@
 package com.packovery.auth;
 
 import com.packovery.auth.dto.*;
+import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
@@ -32,12 +33,14 @@ public class AuthController {
 
    @POST
    @Path("/request-reset-password")
+   @Authenticated
     public Response requestResetPassword(ForgotPasswordRequest request) {
        return authService.requestPasswordReset(request);
    }
 
    @POST
    @Path("/reset-password")
+   @Authenticated
     public Response resetPassword(ResetPasswordRequest request) {
         return authService.resetPassword(request);
    }

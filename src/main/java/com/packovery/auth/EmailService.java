@@ -1,16 +1,35 @@
 package com.packovery.auth;
 
+import io.quarkus.mailer.Mail;
+import io.quarkus.mailer.Mailer;
+import io.quarkus.qute.Location;
+import io.quarkus.qute.Template;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class EmailService {
 
 
-    // * DEV MOCK
+    @Inject
+    Mailer mailer;
+
+    @Inject
+    @Location("otp.html")
+    Template otpTemplate;
+
     public void sendOtpEmail(String toEmail, String otp) {
-        System.out.println("=== INVIO OTP ===");
-        System.out.println("To: " + toEmail);
-        System.out.println("OTP: " + otp);
-        System.out.println("=================");
+
+        String bodyHtml = otpTemplate
+                .data("otp", otp)
+                .render();
+
+        Mail email = Mail.withHtml(
+                "mimmoluca22@gmail.com",
+                "Il tuo Codice di Verifica",
+                bodyHtml
+        ).setReplyTo("testquarkus24@gmail.com");
+
+        mailer.send(email);
     }
 }

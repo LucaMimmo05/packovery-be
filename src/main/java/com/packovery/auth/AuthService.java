@@ -17,13 +17,13 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 
 
 @ApplicationScoped
 public class AuthService {
-
 
     @Inject
     JwtService jwtService;
@@ -51,7 +51,6 @@ public class AuthService {
             throw new UnauthorizedException("Credenziali non valide.");
         }
 
-        // Aggiorna firstName e lastName se forniti e se non esistono già
         boolean updated = false;
         if (firstName != null && !firstName.trim().isEmpty() && user.getFirstName() == null) {
             user.setFirstName(firstName.trim());
@@ -87,7 +86,7 @@ public class AuthService {
         if (user.getAccountStatus() == UserStatus.TEMP_BLOCKED) {
             LocalDateTime blockedUntil = user.getBlockedUntil();
             if (blockedUntil != null && blockedUntil.isAfter(LocalDateTime.now())) {
-                long minutesLeft = java.time.Duration.between(LocalDateTime.now(), blockedUntil).toMinutes();
+                long minutesLeft = Duration.between(LocalDateTime.now(), blockedUntil).toMinutes();
                 return new BlockedResponse(
                         "Account temporaneamente bloccato.",
                         user.getEmail(),
@@ -147,7 +146,11 @@ public class AuthService {
         if (user == null) return Response.status(Response.Status.NOT_FOUND).entity("Email Non Trovata").build();
 
         String otp = otpService.generateOtp(user.getEmail());
-        emailService.sendOtpEmail(user.getEmail(), otp);
+        try{
+            emailService.sendOtpEmail(user.getEmail(), otp);
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Errore nell'invio dell'email").build();
+        }
 
         return Response.ok().build();
     }
