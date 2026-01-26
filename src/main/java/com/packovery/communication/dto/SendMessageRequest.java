@@ -1,7 +1,6 @@
-package com.packovery.logging.dto;
+package com.packovery.communication.dto;
 
 public class SendMessageRequest {
-    public Long senderId;
     public Long riderId;
     public String content;
 }
