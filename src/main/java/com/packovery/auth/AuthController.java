@@ -65,7 +65,7 @@ public class AuthController {
 
    @POST
    @Path("/new-password")
-    public Response newPassword(NewPasswordRequest request) {
+    public Response newPassword(@Valid  NewPasswordRequest request) {
         return authService.setNewPassword(request.getEmail(), request.getPassword());
    }
 }

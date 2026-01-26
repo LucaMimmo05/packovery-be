@@ -127,6 +127,7 @@ public class OrderService {
     private OrderResponse toResponse(Order order) {
         OrderLocation loc = order.getLocation();
         return new OrderResponse(
+                order.id,
                 order.getTrackingCode(),
                 order.getStatus(),
                 loc != null ? loc.getPickupCity() : null,
@@ -154,9 +155,14 @@ public class OrderService {
                 order.getActualSize(),
                 rider != null ? rider.getFirstName() : null,
                 rider != null ? rider.getLastName() : null,
+                order.getCreationDate() != null ? order.getCreationDate() : null,
                 loc != null ? loc.getEstimatedArrival() : null,
                 vehicle != null ? vehicle.getType() : null,
-                vehicle != null ? vehicle.getLicensePlate() : null
+                vehicle != null ? vehicle.getLicensePlate() : null,
+                loc != null ? loc.getDeliveryLatitude(): null,
+                loc != null ? loc.getDeliveryLongitude() : null,
+                loc != null ? loc.getPickupLatitude() : null,
+                loc != null ? loc.getPickupLongitude() : null
         );
     }
 }
