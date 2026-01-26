@@ -1,41 +1,35 @@
 package com.packovery.order;
 
 import com.packovery.common.dto.ApiResponse;
-import com.packovery.order.dto.OrderResponse;
-import com.packovery.order.dto.OrderDetailResponse;
-import com.packovery.order.dto.CreateOrderRequest;
-import com.packovery.common.enums.PackageWeight;
-import com.packovery.common.enums.PackageSize;
-import com.packovery.common.enums.OrderStatus;
+import com.packovery.order.dto.*;
+import com.packovery.common.enums.*;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
-
 import java.util.List;
 
-@RolesAllowed("CUSTOMER_CARE")
+/**
+ * Controller per la gestione degli ordini.
+ * L'accesso è limitato agli utenti con ruolo CUSTOMER_CARE.
+ */
 @Path("/api/orders")
 @Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed("CUSTOMER_CARE")
 public class OrderController {
 
     @Inject
     OrderService orderService;
 
     @POST
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response createOrder(@Valid CreateOrderRequest request) {
-        try {
-            OrderDetailResponse order = orderService.createOrder(request);
-            return Response.status(Response.Status.CREATED)
-                    .entity(ApiResponse.success("Ordine creato con successo", order))
-                    .build();
-        } catch (Exception e) {
-            throw e;
-        }
+        OrderDetailResponse order = orderService.createOrder(request);
+        return Response.status(Response.Status.CREATED)
+                .entity(ApiResponse.success("Ordine creato con successo", order))
+                .build();
     }
 
     @GET
@@ -48,31 +42,23 @@ public class OrderController {
             @QueryParam("deliveryProvince") String deliveryProvince,
             @QueryParam("weight") PackageWeight weight,
             @QueryParam("size") PackageSize size,
-            @QueryParam("createdAt") String createdAt
-            ) {
-        try {
-            List<OrderResponse> orders = orderService.getAllOrders(
-                    id, status, pickUpCity, pickUpProvince,
-                    deliveryCity, deliveryProvince, weight, size, createdAt);
+            @QueryParam("createdAt") String createdAt) {
 
-            return Response.ok()
-                    .entity(ApiResponse.success("Ordini recuperati con successo", orders))
-                    .build();
-        } catch (Exception e) {
-            throw e;
-        }
+        List<OrderResponse> orders = orderService.getAllOrders(
+                id, status, pickUpCity, pickUpProvince,
+                deliveryCity, deliveryProvince, weight, size, createdAt);
+
+        return Response.ok()
+                .entity(ApiResponse.success("Ordini recuperati con successo", orders))
+                .build();
     }
 
     @GET
-    @Path("/{id}")
+    @Path("/{id:[0-9]+}")
     public Response getOrderById(@PathParam("id") Long id) {
-        try {
-            OrderDetailResponse order = orderService.getOrderById(id);
-            return Response.ok()
-                    .entity(ApiResponse.success("Ordine recuperato con successo", order))
-                    .build();
-        } catch (Exception e) {
-            throw e;
-        }
+        OrderDetailResponse order = orderService.getOrderById(id);
+        return Response.ok()
+                .entity(ApiResponse.success("Ordine recuperato con successo", order))
+                .build();
     }
 }
