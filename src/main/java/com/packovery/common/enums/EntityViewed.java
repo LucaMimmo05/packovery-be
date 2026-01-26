@@ -1,8 +1,10 @@
 package com.packovery.common.enums;
 
 public enum EntityViewed {
+    APPLICATION,
     ORDER,
     RIDER,
-    USER,
-    APPLICATION
+    MAP,
+    ALERT,
+    REPORT
 }

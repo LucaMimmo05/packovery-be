@@ -11,6 +11,5 @@ public class AlertRule extends PanacheMongoEntity {
     public String description;
     public AlertStatus status;
     public AlertType type;
-    public String customTypeText;
     public String timeThreshold; //soglia
 }

@@ -4,5 +4,5 @@ import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class RiderTrackingRepository implements PanacheMongoRepository<RiderTracking> {
+public class RiderLocationRepository implements PanacheMongoRepository<RiderLocation> {
 }
