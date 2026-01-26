@@ -2,12 +2,12 @@ package com.packovery.alert;
 
 import com.packovery.common.enums.AlertType;
 import com.packovery.common.enums.IssueResolution;
+import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import org.bson.types.ObjectId;
 
 @ApplicationScoped
@@ -17,9 +17,9 @@ public class AlertIssueService {
     AlertIssueRepository repository;
 
     @Transactional
-    public void createIssue(Long orderId, String snapshotName, AlertType snapshotType) {
+    public void createIssue(String ruleId, Long orderId, String snapshotName, AlertType snapshotType) {
         AlertIssue issue = new AlertIssue();
-        issue.alertId = UUID.randomUUID().toString();
+        issue.alertId = ruleId;
         issue.issueRelatedOrderId = orderId;
         issue.snapshotAlertName = snapshotName;
         issue.snapshotAlertType = snapshotType;
@@ -43,10 +43,10 @@ public class AlertIssueService {
     }
 
     public List<AlertIssue> getOpenIssues() {
-        return repository.list("resolution", IssueResolution.OPEN);
+        return repository.list("resolution", Sort.descending("issueCreationTime"), IssueResolution.OPEN);
     }
 
     public List<AlertIssue> getByOrder(Long orderId) {
-        return repository.list("issueRelatedOrderId", orderId);
+        return repository.list("issueRelatedOrderId", Sort.descending("issueCreationTime"), orderId);
     }
 }

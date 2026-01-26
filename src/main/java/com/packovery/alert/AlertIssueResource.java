@@ -7,6 +7,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 @Path("/alert-issues")
 @Produces(MediaType.APPLICATION_JSON)
@@ -16,6 +17,16 @@ public class AlertIssueResource {
 
     @Inject
     AlertIssueService issueService;
+    @Inject
+    JsonWebToken jwt;
+
+    private Long getAdminIdFromToken() {
+        Object userIdClaim = jwt.getClaim("userId");
+        if (userIdClaim == null) {
+            return 0L;
+        }
+        return Long.valueOf(userIdClaim.toString());
+    }
 
     @GET
     @Path("/open")
@@ -31,14 +42,16 @@ public class AlertIssueResource {
 
     @POST
     public Response createManualIssue(CreateIssueRequest request) {
-        issueService.createIssue(request.orderId, request.alertName, request.type);
+        issueService.createIssue(request.ruleId, request.orderId, request.alertName, request.type);
         return Response.status(201).build();
     }
 
     @PUT
     @Path("/{id}/resolve")
     public Response resolve(@PathParam("id") String id, ResolveIssueRequest request) {
-        issueService.resolveIssue(id, request.adminId, request.notes);
+        Long adminId = getAdminIdFromToken();
+
+        issueService.resolveIssue(id, adminId, request.notes);
         return Response.ok().build();
     }
 }

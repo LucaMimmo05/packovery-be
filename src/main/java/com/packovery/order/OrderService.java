@@ -150,8 +150,7 @@ public class OrderService {
                 loc != null ? loc.getDeliveryProvince() : null,
                 order.getPackageWeight(),
                 order.getPackageSize(),
-                order.getCreationDate()
-        );
+                order.getCreationDate());
     }
 
     private OrderDetailResponse toDetailResponse(Order order) {
@@ -173,16 +172,10 @@ public class OrderService {
                 loc != null ? loc.getEstimatedArrival() : null,
                 vehicle != null ? vehicle.getType() : null,
                 vehicle != null ? vehicle.getLicensePlate() : null,
-                loc != null ? loc.getDeliveryLatitude(): null,
+                loc != null ? loc.getDeliveryLatitude() : null,
                 loc != null ? loc.getDeliveryLongitude() : null,
                 loc != null ? loc.getPickupLatitude() : null,
-                loc != null ? loc.getPickupLongitude() : null,
-                loc != null ? loc.getPickupCity() : null,
-                loc != null ? loc.getPickupProvince() : null,
-                loc != null ? loc.getDeliveryCity() : null,
-                loc != null ? loc.getDeliveryProvince() : null,
-                order.getTrackingCode(),
-                rider != null ? rider.id : null
+                loc != null ? loc.getPickupLongitude() : null
         );
     }
 }
