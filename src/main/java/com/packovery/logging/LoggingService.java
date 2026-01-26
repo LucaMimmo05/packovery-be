@@ -31,23 +31,6 @@ public class LoggingService {
         userLogRepository.persist(userLog);
     }
 
-    public void logMessage(Long senderId, Long riderId, String text) {
-        UserLog userLog = new UserLog();
-        userLog.userId = senderId;
-        userLog.actionType = ActionType.SEND_MESSAGE;
-        userLog.entityViewed = EntityViewed.RIDER;
-        userLog.eventTimestamp = Instant.now();
-        userLog.messageSentTime = Instant.now();
-        userLog.messageReadStatus = false;
-
-        userLog.metadata = Map.of(
-                "riderId", riderId,
-                "text", text
-        );
-
-        userLogRepository.persist(userLog);
-    }
-
     public List<UserLog> getLogsByUserId(Long userId) {
         return userLogRepository.findByUserId(userId);
     }

@@ -2,8 +2,8 @@ package com.packovery.logging;
 
 import com.packovery.logging.dto.CreateUserLogRequest;
 import com.packovery.logging.dto.LogoutRequest;
-import com.packovery.logging.dto.SendMessageRequest;
 import io.quarkus.security.Authenticated;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -16,12 +16,8 @@ import java.util.List;
 @Authenticated
 public class LoggingResource {
 
-    private final LoggingService loggingService;
-
-    @jakarta.inject.Inject
-    public LoggingResource(LoggingService loggingService) {
-        this.loggingService = loggingService;
-    }
+    @Inject
+    LoggingService loggingService;
 
     @GET
     @Path("/user/{userId}")
@@ -37,17 +33,6 @@ public class LoggingResource {
                 logRequest.actionType,
                 logRequest.entityViewed,
                 logRequest.metadata
-        );
-        return Response.accepted().build();
-    }
-
-    @POST
-    @Path("/message")
-    public Response createMessage(SendMessageRequest messageRequest){
-        loggingService.logMessage(
-                messageRequest.senderId,
-                messageRequest.riderId,
-                messageRequest.content
         );
         return Response.accepted().build();
     }
