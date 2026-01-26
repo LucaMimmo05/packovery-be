@@ -2,6 +2,7 @@ package com.packovery.communication;
 
 import com.packovery.communication.dto.SendMessageRequest;
 import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -22,19 +23,23 @@ public class RiderCommunicationResource {
     JsonWebToken jwt;
 
     public Long getUserId() {
-        Object userIdClaim = jwt.getClaim("userId");
+        String subject = jwt.getSubject();
 
-        if (userIdClaim == null) {
+        if (subject == null) {
             return 0L;
         }
 
-        return Long.valueOf(userIdClaim.toString());
+        try {
+            return Long.valueOf(subject);
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
     }
 
+    @RolesAllowed("CUSTOMER_CARE")
     @POST
     public Response sendMessage(SendMessageRequest request) {
-        commService.sendMessage(getUserId(), request.riderId, request.content);
-        return Response.status(201).build();
+        commService.sendMessage(getUserId(), request.riderId, request.content, request.orderId);        return Response.status(201).build();
     }
 
     @PUT

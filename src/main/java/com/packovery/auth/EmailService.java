@@ -18,6 +18,10 @@ public class EmailService {
     @Location("otp.html")
     Template otpTemplate;
 
+    @Inject
+    @Location("message_confirmation.html")
+    Template messageConfirmationTemplate;
+
     public void sendOtpEmail(String toEmail, String otp) {
 
         String bodyHtml = otpTemplate
@@ -29,6 +33,25 @@ public class EmailService {
                 "Il tuo Codice di Verifica",
                 bodyHtml
         ).setReplyTo("testquarkus24@gmail.com");
+
+        mailer.send(email);
+    }
+
+    public void sendMessageConfirmation(String toEmail, String orderId, Long riderId, String content) {
+
+        String bodyHtml = messageConfirmationTemplate
+                .data("orderId", orderId)
+                .data("riderId", riderId)
+                .data("content", content)
+                .render();
+
+        Mail email = Mail.withHtml(
+                        toEmail,
+                        "Conferma Invio Messaggio - Ordine " + orderId,
+                        bodyHtml
+                )
+                .setFrom("testquarkus24@gmail.com")
+                .setReplyTo("no-reply@packovery.com");
 
         mailer.send(email);
     }
