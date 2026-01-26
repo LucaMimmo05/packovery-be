@@ -32,7 +32,6 @@ public class OrderService {
         order.setCreatedAt(now);
         order.setUpdatedAt(now);
 
-
         if (request.getRiderId() != null) {
             User rider = User.findById(request.getRiderId());
             if (rider != null) {
@@ -68,10 +67,11 @@ public class OrderService {
     }
 
     public List<OrderResponse> getAllOrders(Long id, OrderStatus status, String pickUpCity,
-                                            String pickUpProvince, String deliveryCity, String deliveryProvince,
-                                            PackageWeight weight, PackageSize size, String createdAt) {
+            String pickUpProvince, String deliveryCity, String deliveryProvince,
+            PackageWeight weight, PackageSize size, String createdAt) {
 
-        // "JOIN FETCH" carica la location in una sola query, evitando errori di LazyInitialization
+        // "JOIN FETCH" carica la location in una sola query, evitando errori di
+        // LazyInitialization
         StringBuilder query = new StringBuilder("FROM Order o LEFT JOIN FETCH o.location loc WHERE 1=1");
         Parameters params = new Parameters();
 
@@ -136,8 +136,7 @@ public class OrderService {
                 loc != null ? loc.getDeliveryProvince() : null,
                 order.getPackageWeight(),
                 order.getPackageSize(),
-                order.getCreationDate()
-        );
+                order.getCreationDate());
     }
 
     private OrderDetailResponse toDetailResponse(Order order) {
@@ -159,10 +158,9 @@ public class OrderService {
                 loc != null ? loc.getEstimatedArrival() : null,
                 vehicle != null ? vehicle.getType() : null,
                 vehicle != null ? vehicle.getLicensePlate() : null,
-                loc != null ? loc.getDeliveryLatitude(): null,
+                loc != null ? loc.getDeliveryLatitude() : null,
                 loc != null ? loc.getDeliveryLongitude() : null,
                 loc != null ? loc.getPickupLatitude() : null,
-                loc != null ? loc.getPickupLongitude() : null
-        );
+                loc != null ? loc.getPickupLongitude() : null);
     }
 }

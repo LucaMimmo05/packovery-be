@@ -25,12 +25,14 @@ public class OrderDetailResponse {
     private BigDecimal deliveryLongitude;
     private BigDecimal deliveryLatitude;
 
-    public OrderDetailResponse() {}
+    public OrderDetailResponse() {
+    }
 
     public OrderDetailResponse(Long orderId, String creatorFirstName, String creatorLastName,
-                              OrderStatus orderStatus, BigDecimal packageWeight, BigDecimal packageSize,
-                              String riderFirstName, String riderLastName,LocalDateTime creationDate, LocalDateTime estimatedArrival,
-                              VehicleType vehicleType, String vehicleLicensePlate, BigDecimal deliveryLatitude, BigDecimal deliveryLongitude, BigDecimal pickupLatitude, BigDecimal pickupLongitude) {
+            OrderStatus orderStatus, BigDecimal packageWeight, BigDecimal packageSize,
+            String riderFirstName, String riderLastName, LocalDateTime creationDate, LocalDateTime estimatedArrival,
+            VehicleType vehicleType, String vehicleLicensePlate, BigDecimal deliveryLatitude,
+            BigDecimal deliveryLongitude, BigDecimal pickupLatitude, BigDecimal pickupLongitude) {
         this.orderId = orderId;
         this.creatorFirstName = creatorFirstName;
         this.creatorLastName = creatorLastName;
