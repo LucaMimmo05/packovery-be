@@ -3,15 +3,13 @@ package com.packovery.auth.dto;
 public class ResetPasswordRequest {
     private String email;
     private String otp;
-    private String newPassword;
 
     public ResetPasswordRequest() {
     }
 
-    public ResetPasswordRequest(String email, String otp, String newPassword) {
+    public ResetPasswordRequest(String email, String otp) {
         this.email = email;
         this.otp = otp;
-        this.newPassword = newPassword;
     }
 
 
@@ -31,11 +29,4 @@ public class ResetPasswordRequest {
         this.otp = otp;
     }
 
-    public String getNewPassword() {
-        return newPassword;
-    }
-
-    public void setNewPassword(String newPassword) {
-        this.newPassword = newPassword;
-    }
 }

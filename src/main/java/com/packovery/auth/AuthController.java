@@ -42,4 +42,10 @@ public class AuthController {
     public Response resetPassword(ResetPasswordRequest request) {
         return authService.resetPassword(request);
    }
+
+   @POST
+   @Path("/new-password")
+    public Response newPassword(NewPasswordRequest request) {
+        return authService.setNewPassword(request.getEmail(), request.getPassword());
+   }
 }

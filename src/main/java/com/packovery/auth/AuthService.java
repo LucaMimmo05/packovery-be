@@ -154,6 +154,22 @@ public class AuthService {
 
         return Response.ok().build();
     }
+    @Transactional
+    public Response setNewPassword(String email, String newPassword) {
+        User user = findUserByEmail(email);
+
+        if (user == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity("Email Non Trovata").build();
+        }
+
+        user.setPasswordHash(BcryptUtil.bcryptHash(newPassword));
+
+        return Response.ok().build();
+
+
+
+
+    }
 
     @Transactional
     public Response resetPassword(ResetPasswordRequest request) {
@@ -176,7 +192,6 @@ public class AuthService {
                     .build();
         }
 
-        user.setPasswordHash(BcryptUtil.bcryptHash(request.getNewPassword()));
 
         return Response.ok()
                 .entity("Password reimpostata con successo.")
