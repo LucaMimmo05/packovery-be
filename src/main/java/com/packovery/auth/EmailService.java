@@ -25,7 +25,7 @@ public class EmailService {
                 .render();
 
         Mail email = Mail.withHtml(
-                "mimmoluca22@gmail.com",
+                toEmail,
                 "Il tuo Codice di Verifica",
                 bodyHtml
         ).setReplyTo("testquarkus24@gmail.com");
