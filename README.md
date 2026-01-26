@@ -1,86 +1,351 @@
-# packovery-be
+# Packovery Backend API
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Sistema backend per la gestione di ordini e spedizioni con autenticazione JWT, sviluppato con Quarkus Framework.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+## 🚀 Tecnologie Utilizzate
 
-## Running the application in dev mode
+- **Java 21** - Linguaggio di programmazione
+- **Quarkus 3.17.4** - Framework reattivo supersonic
+- **Maven** - Gestione dipendenze e build
+- **JAX-RS** - API REST
+- **PostgreSQL** - Database relazionale
+- **Redis** - Cache per OTP e session management
+- **JWT** - Autenticazione e autorizzazione
+- **Hibernate ORM con Panache** - ORM semplificato
+- **Mailer** - Servizio invio email
+- **Bean Validation** - Validazione dati
 
-You can run your application in dev mode that enables live coding using:
+## 📁 Struttura del Progetto
 
-```shell script
+```
+src/
+├── main/
+│   ├── java/com/packovery/
+│   │   ├── auth/              # Sistema autenticazione e sicurezza
+│   │   ├── user/              # Gestione utenti
+│   │   ├── order/             # Gestione ordini
+│   │   ├── vehicle/           # Gestione veicoli
+│   │   ├── location/          # Gestione posizioni
+│   │   ├── communication/     # Sistema comunicazioni
+│   │   ├── alert/             # Sistema alert e notifiche
+│   │   ├── logging/           # Sistema logging
+│   │   ├── security/          # Configurazioni sicurezza
+│   │   └── common/            # Classi condivise
+│   │       ├── dto/           # Data Transfer Objects
+│   │       ├── enums/         # Enumerazioni
+│   │       └── exceptions/    # Gestione eccezioni
+│   └── resources/
+│       ├── application.properties
+│       ├── import.sql
+│       ├── privateKey.pem
+│       ├── publicKey.pem
+│       └── templates/
+└── test/
+```
+
+## 🔧 Prerequisiti
+
+- **Java 21+**
+- **Maven 3.8+**
+- **PostgreSQL 13+**
+- **Redis Server**
+
+## ⚡ Installazione e Avvio
+
+### 1. Clonare il Repository
+```bash
+git clone <repository-url>
+cd packovery-be
+```
+
+### 2. Configurare Database PostgreSQL
+```sql
+-- Creare database
+CREATE DATABASE packovery_db;
+
+-- Creare utente
+CREATE USER packovery_admin WITH PASSWORD 'packovery_pwd';
+
+-- Assegnare permessi
+GRANT ALL PRIVILEGES ON DATABASE packovery_db TO packovery_admin;
+```
+
+### 3. Configurare Redis
+Assicurarsi che Redis sia in esecuzione sulla porta predefinita 6379.
+
+### 4. Variabili d'Ambiente
+Creare un file `.env` o configurare le seguenti variabili:
+
+```properties
+# Database PostgreSQL
+QUARKUS_DATASOURCE_JDBC_URL_POSTGRE=jdbc:postgresql://localhost:5432/packovery_db
+QUARKUS_DATASOURCE_USERNAME_POSTGRE=packovery_admin
+QUARKUS_DATASOURCE_PASSWORD_POSTGRE=packovery_pwd
+
+# Redis
+QUARKUS_REDIS_HOSTS=redis://localhost:6379
+
+# OTP Secret
+OTP_SECRET=YOUR_SECRET_KEY_HERE
+
+# Email Configuration
+MAIL_USERNAME=your-email@domain.com
+MAIL_PASSWORD=your-app-password
+```
+
+### 5. Compilare e Avviare
+
+#### Modalità Sviluppo (con live reload)
+```bash
 ./mvnw quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
-
-## Packaging and running the application
-
-The application can be packaged using:
-
-```shell script
-./mvnw package
+#### Build Produzione
+```bash
+./mvnw clean package
+java -jar target/quarkus-app/quarkus-run.jar
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+L'applicazione sarà disponibile su: `http://localhost:8080`
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+## 📚 API Endpoints
 
-If you want to build an _über-jar_, execute the following command:
+### 🔐 Autenticazione (`/api/auth`)
+- `POST /login` - Login utente con email e password
+- `POST /refresh` - Rinnova access token usando refresh token
+- `POST /request-reset-password` - Richiede reset password via email
+- `POST /reset-password` - Reimposta password con OTP
+- `POST /new-password` - Imposta nuova password
 
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+### 👤 Utenti (`/api/users`)
+- `GET /` - Lista tutti gli utenti (Admin)
+- `POST /` - Crea nuovo utente (Admin)
+- `GET /{id}` - Dettagli utente specifico
+
+### 📦 Ordini (`/api/orders`)
+- `GET /` - Lista ordini con filtri opzionali
+- `POST /` - Crea nuovo ordine
+- `GET /{id}` - Dettagli ordine specifico
+- `PUT /{id}/status` - Aggiorna stato ordine
+
+## 🔍 Esempi di Utilizzo
+
+### Login
+```javascript
+const response = await fetch('http://localhost:8080/api/auth/login', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    email: 'user@example.com',
+    password: 'password123',
+    firstName: 'Mario',
+    lastName: 'Rossi'
+  })
+});
+
+const data = await response.json();
+console.log('Access Token:', data.data.accessToken);
+console.log('Refresh Token:', data.data.refreshToken);
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+### Refresh Token
+```javascript
+const response = await fetch('http://localhost:8080/api/auth/refresh', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    refreshToken: 'your-refresh-token-here'
+  })
+});
+```
 
-## Creating a native executable
+### Reset Password
+```javascript
+// 1. Richiesta reset
+const resetRequest = await fetch('http://localhost:8080/api/auth/request-reset-password', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    email: 'user@example.com'
+  })
+});
 
-You can create a native executable using:
+// 2. Conferma con OTP
+const resetConfirm = await fetch('http://localhost:8080/api/auth/reset-password', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    email: 'user@example.com',
+    otp: '123456'
+  })
+});
+```
 
-```shell script
+### Ottenere Ordini con Filtri
+```javascript
+const response = await fetch('http://localhost:8080/api/orders?status=IN_TRANSIT&riderId=5&limit=10', {
+  headers: {
+    'Authorization': 'Bearer your-access-token'
+  }
+});
+```
+
+## 🗄️ Modello Dati
+
+### Utente (User)
+```java
+{
+  "id": "UUID",
+  "email": "string",
+  "firstName": "string", 
+  "lastName": "string",
+  "role": "ADMIN|RIDER|CUSTOMER",
+  "isActive": "boolean",
+  "isBlocked": "boolean",
+  "blockedUntil": "LocalDateTime"
+}
+```
+
+### Ordine (Order)
+```java
+{
+  "id": "UUID",
+  "customerEmail": "string",
+  "riderEmail": "string",
+  "status": "PENDING|CONFIRMED|IN_TRANSIT|DELIVERED|CANCELLED",
+  "packageWeight": "S|M|L|XL",
+  "packageSize": "S|M|L|XL", 
+  "transportType": "BIKE|SCOOTER|CAR|VAN",
+  "overweight": "boolean",
+  "estimatedArrival": "LocalDateTime",
+  "createdAt": "LocalDateTime",
+  "updatedAt": "LocalDateTime"
+}
+```
+
+## ⚠️ Gestione Errori
+
+L'API restituisce errori standardizzati nel formato:
+
+```json
+{
+  "success": false,
+  "message": "Messaggio errore in italiano",
+  "error": "CODICE_ERRORE",
+  "timestamp": "2026-01-26T10:30:00"
+}
+```
+
+### Codici di Stato HTTP
+- `200` - Successo
+- `400` - Richiesta non valida
+- `401` - Non autorizzato
+- `403` - Accesso negato
+- `404` - Risorsa non trovata
+- `422` - Errore di validazione
+- `429` - Troppe richieste
+- `500` - Errore interno del server
+
+## 🧪 Testing
+
+### Eseguire tutti i test
+```bash
+./mvnw test
+```
+
+### Test di integrazione
+```bash
+./mvnw verify
+```
+
+### Coverage report
+```bash
+./mvnw jacoco:report
+```
+
+## 🔒 Sicurezza
+
+- **JWT Tokens**: Access token (15 min) + Refresh token (7 giorni)
+- **Rate Limiting**: Protezione contro attacchi brute force
+- **Password Hashing**: BCrypt con salt
+- **OTP**: Codici temporanei per reset password (5 minuti)
+- **Account Blocking**: Blocco temporaneo dopo tentativi falliti
+- **Input Validation**: Validazione rigorosa di tutti gli input
+- **HTTPS**: Obbligatorio in produzione
+
+## 🚀 Deploy
+
+### Build Nativa (GraalVM)
+```bash
 ./mvnw package -Dnative
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+### Container Docker
+```bash
+docker build -f src/main/docker/Dockerfile.jvm -t packovery-backend .
+docker run -p 8080:8080 packovery-backend
 ```
 
-You can then execute your native executable with: `./target/packovery-be-1.0-SNAPSHOT-runner`
+## 🔧 Configurazione Avanzata
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+### Database Connection Pool
+```properties
+quarkus.datasource.jdbc.min-size=5
+quarkus.datasource.jdbc.max-size=20
+quarkus.datasource.jdbc.acquisition-timeout=10
+```
 
-## Related Guides
+### Redis Configuration
+```properties
+quarkus.redis.timeout=2s
+quarkus.redis.max-pool-size=20
+quarkus.redis.max-pool-waiting=30
+```
 
-- Security Jakarta Persistence Reactive ([guide](https://quarkus.io/guides/security-getting-started)): Secure your
-  applications with username/password stored in a database via Jakarta Persistence
-- MongoDB with Panache ([guide](https://quarkus.io/guides/mongodb-panache)): Simplify your persistence code for MongoDB
-  via the active record or the repository pattern
-- Hibernate Validator ([guide](https://quarkus.io/guides/validation)): Validate object properties (field, getter) and
-  method parameters for your beans (REST, CDI, Jakarta Persistence)
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus
-  REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplify your persistence code
-  for Hibernate ORM via the active record or the repository pattern
-- SmallRye JWT ([guide](https://quarkus.io/guides/security-jwt)): Secure your applications with JSON Web Token
-- Mailer ([guide](https://quarkus.io/guides/mailer)): Send emails
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
+### JWT Configuration
+```properties
+mp.jwt.verify.publickey.location=publicKey.pem
+smallrye.jwt.sign.key.location=privateKey.pem
+mp.jwt.verify.issuer=packovery
+```
 
-## Provided Code
+## 🐛 Debug e Troubleshooting
 
-### Hibernate ORM
+### Logs
+```bash
+# Visualizza logs in tempo reale
+tail -f target/quarkus.log
 
-Create your first JPA entity
+# Debug SQL queries
+quarkus.hibernate-orm.log.sql=true
+```
 
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
+### Health Check
+```bash
+curl http://localhost:8080/q/health
+```
 
-[Related Hibernate with Panache section...](https://quarkus.io/guides/hibernate-orm-panache)
+### Metrics
+```bash
+curl http://localhost:8080/q/metrics
+```
 
-### REST
+## 📝 Licenza
 
-Easily start your REST Web Services
+Progetto sviluppato per scopi accademici - Gruppo 4
 
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+## 👥 Team
+
+Sviluppato dal Team Frontend/Backend per il progetto Packovery
+
+---
+
+Per maggiori informazioni, consultare la documentazione API completa in `API_DOCUMENTATION.md`
