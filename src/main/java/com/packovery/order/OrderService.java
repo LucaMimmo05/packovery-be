@@ -127,6 +127,7 @@ public class OrderService {
     private OrderResponse toResponse(Order order) {
         OrderLocation loc = order.getLocation();
         return new OrderResponse(
+                order.id,
                 order.getTrackingCode(),
                 order.getStatus(),
                 loc != null ? loc.getPickupCity() : null,
