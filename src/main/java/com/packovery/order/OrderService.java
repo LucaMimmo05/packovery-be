@@ -1,26 +1,18 @@
 package com.packovery.order;
 
-import com.packovery.order.dto.OrderResponse;
-import com.packovery.order.dto.OrderDetailResponse;
-import com.packovery.order.dto.CreateOrderRequest;
+import com.packovery.order.dto.*;
 import com.packovery.user.User;
 import com.packovery.vehicle.Vehicle;
 import com.packovery.location.OrderLocation;
-import com.packovery.common.enums.PackageWeight;
-import com.packovery.common.enums.PackageSize;
-import com.packovery.common.enums.OrderStatus;
+import com.packovery.common.enums.*;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
-import io.quarkus.panache.common.Parameters;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.NotFoundException;
+import io.quarkus.panache.common.Parameters;
 
-import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @ApplicationScoped
@@ -29,15 +21,17 @@ public class OrderService {
     @Transactional
     public OrderDetailResponse createOrder(CreateOrderRequest request) {
         String trackingCode = "PKV" + System.currentTimeMillis();
+        LocalDateTime now = LocalDateTime.now();
 
         Order order = new Order(OrderStatus.PENDING, trackingCode, request.getSenderId());
         order.setPackageSize(request.getPackageSize());
         order.setPackageWeight(request.getPackageWeight());
         order.setActualWeight(request.getActualWeight());
         order.setActualSize(request.getActualSize());
-        order.setCreationDate(LocalDateTime.now());
-        order.setCreatedAt(LocalDateTime.now());
-        order.setUpdatedAt(LocalDateTime.now());
+        order.setCreationDate(now);
+        order.setCreatedAt(now);
+        order.setUpdatedAt(now);
+
 
         if (request.getRiderId() != null) {
             User rider = User.findById(request.getRiderId());
@@ -63,8 +57,8 @@ public class OrderService {
             location.setPickupProvince(request.getPickupProvince());
             location.setDeliveryCity(request.getDeliveryCity());
             location.setDeliveryProvince(request.getDeliveryProvince());
-            location.setCreatedAt(LocalDateTime.now());
-            location.setUpdatedAt(LocalDateTime.now());
+            location.setCreatedAt(now);
+            location.setUpdatedAt(now);
             location.persist();
 
             order.setLocation(location);
@@ -74,61 +68,50 @@ public class OrderService {
     }
 
     public List<OrderResponse> getAllOrders(Long id, OrderStatus status, String pickUpCity,
-                                           String pickUpProvince, String deliveryCity, String deliveryProvince,
-                                           PackageWeight weight, PackageSize size, String createdAt) {
-        StringBuilder query = new StringBuilder("select o from Order o left join o.location loc where 1=1");
+                                            String pickUpProvince, String deliveryCity, String deliveryProvince,
+                                            PackageWeight weight, PackageSize size, String createdAt) {
+
+        // "JOIN FETCH" carica la location in una sola query, evitando errori di LazyInitialization
+        StringBuilder query = new StringBuilder("FROM Order o LEFT JOIN FETCH o.location loc WHERE 1=1");
         Parameters params = new Parameters();
 
         if (id != null) {
-            query.append(" and o.id = :id");
+            query.append(" AND o.id = :id");
             params.and("id", id);
         }
-
         if (status != null) {
-            query.append(" and o.status = :status");
+            query.append(" AND o.status = :status");
             params.and("status", status);
         }
-
         if (weight != null) {
-            query.append(" and o.packageWeight = :weight");
+            query.append(" AND o.packageWeight = :weight");
             params.and("weight", weight);
         }
-
         if (size != null) {
-            query.append(" and o.packageSize = :size");
+            query.append(" AND o.packageSize = :size");
             params.and("size", size);
         }
-        if (pickUpCity != null && !pickUpCity.isEmpty()) {
-            query.append(" and loc.pickupCity like :pickUpCity");
+        if (pickUpCity != null && !pickUpCity.isBlank()) {
+            query.append(" AND loc.pickupCity LIKE :pickUpCity");
             params.and("pickUpCity", "%" + pickUpCity + "%");
         }
-
-        if (pickUpProvince != null && !pickUpProvince.isEmpty()) {
-            query.append(" and loc.pickupProvince like :pickUpProvince");
-            params.and("pickUpProvince", "%" + pickUpProvince + "%");
-        }
-
-        if (deliveryCity != null && !deliveryCity.isEmpty()) {
-            query.append(" and loc.deliveryCity like :deliveryCity");
+        if (deliveryCity != null && !deliveryCity.isBlank()) {
+            query.append(" AND loc.deliveryCity LIKE :deliveryCity");
             params.and("deliveryCity", "%" + deliveryCity + "%");
         }
 
-        if (deliveryProvince != null && !deliveryProvince.isEmpty()) {
-            query.append(" and loc.deliveryProvince like :deliveryProvince");
-            params.and("deliveryProvince", "%" + deliveryProvince + "%");
-        }
-
-        if (createdAt != null && !createdAt.isEmpty()) {
+        if (createdAt != null && !createdAt.isBlank()) {
             try {
-                LocalDateTime date = LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                query.append(" and o.creationDate >= :createdAt and o.creationDate < :createdAtEnd");
-                params.and("createdAt", date);
-                params.and("createdAtEnd", date.plusDays(1));
-            } catch (Exception e) {
+                LocalDate date = LocalDate.parse(createdAt);
+                query.append(" AND o.creationDate >= :start AND o.creationDate < :end");
+                params.and("start", date.atStartOfDay());
+                params.and("end", date.plusDays(1).atStartOfDay());
+            } catch (DateTimeParseException e) {
             }
         }
 
-        return Order.<Order>find(query.toString(), params).stream()
+        return Order.<Order>find(query.toString(), params)
+                .stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -141,27 +124,15 @@ public class OrderService {
         return toDetailResponse(order);
     }
 
-
     private OrderResponse toResponse(Order order) {
-        String pickUpCity = null;
-        String pickUpProvince = null;
-        String deliveryCity = null;
-        String deliveryProvince = null;
-
-        if (order.getLocation() != null) {
-            pickUpCity = order.getLocation().getPickupCity();
-            pickUpProvince = order.getLocation().getPickupProvince();
-            deliveryCity = order.getLocation().getDeliveryCity();
-            deliveryProvince = order.getLocation().getDeliveryProvince();
-        }
-
+        OrderLocation loc = order.getLocation();
         return new OrderResponse(
                 order.getTrackingCode(),
                 order.getStatus(),
-                pickUpCity,
-                pickUpProvince,
-                deliveryCity,
-                deliveryProvince,
+                loc != null ? loc.getPickupCity() : null,
+                loc != null ? loc.getPickupProvince() : null,
+                loc != null ? loc.getDeliveryCity() : null,
+                loc != null ? loc.getDeliveryProvince() : null,
                 order.getPackageWeight(),
                 order.getPackageSize(),
                 order.getCreationDate()
@@ -169,19 +140,10 @@ public class OrderService {
     }
 
     private OrderDetailResponse toDetailResponse(Order order) {
-        User creator = null;
-        if (order.getSenderId() != null) {
-            creator = User.findById(order.getSenderId());
-        }
-
+        User creator = (order.getSenderId() != null) ? User.findById(order.getSenderId()) : null;
         User rider = order.getRider();
-
         Vehicle vehicle = order.getVehicle();
-
-        LocalDateTime estimatedArrival = null;
-        if (order.getLocation() != null) {
-            estimatedArrival = order.getLocation().getEstimatedArrival();
-        }
+        OrderLocation loc = order.getLocation();
 
         return new OrderDetailResponse(
                 order.id,
@@ -192,7 +154,7 @@ public class OrderService {
                 order.getActualSize(),
                 rider != null ? rider.getFirstName() : null,
                 rider != null ? rider.getLastName() : null,
-                estimatedArrival,
+                loc != null ? loc.getEstimatedArrival() : null,
                 vehicle != null ? vehicle.getType() : null,
                 vehicle != null ? vehicle.getLicensePlate() : null
         );

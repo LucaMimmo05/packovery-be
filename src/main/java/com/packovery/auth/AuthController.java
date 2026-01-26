@@ -2,7 +2,6 @@ package com.packovery.auth;
 
 import com.packovery.auth.dto.*;
 import com.packovery.common.dto.ApiResponse;
-import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
