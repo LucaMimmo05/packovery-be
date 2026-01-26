@@ -26,7 +26,13 @@ public class AlertRuleResource {
     JsonWebToken jwt;
 
     public Long getUserId() {
-        return Long.valueOf(jwt.getClaim("userId"));
+        Object userIdClaim = jwt.getClaim("userId");
+
+        if (userIdClaim == null) {
+            return 0L;
+        }
+
+        return Long.valueOf(userIdClaim.toString());
     }
 
     @GET
