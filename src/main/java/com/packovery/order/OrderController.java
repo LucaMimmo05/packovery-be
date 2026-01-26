@@ -54,9 +54,9 @@ public class OrderController {
     }
 
     @GET
-    @Path("/{id:[0-9]+}")
-    public Response getOrderById(@PathParam("id") Long id) {
-        OrderDetailResponse order = orderService.getOrderById(id);
+    @Path("/{trackingCode}")
+    public Response getOrderByTrackingCode(@PathParam("trackingCode") String trackingCode) {
+        OrderDetailResponse order = orderService.getOrderByTrackingCode(trackingCode);
         return Response.ok()
                 .entity(ApiResponse.success("Ordine recuperato con successo", order))
                 .build();

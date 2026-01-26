@@ -24,13 +24,22 @@ public class OrderDetailResponse {
     private BigDecimal pickupLatitude;
     private BigDecimal deliveryLongitude;
     private BigDecimal deliveryLatitude;
+    
+    // Added fields
+    private String pickupCity;
+    private String pickupProvince;
+    private String deliveryCity;
+    private String deliveryProvince;
+    private String trackingCode;
+    private Long riderId;
 
     public OrderDetailResponse() {}
 
     public OrderDetailResponse(Long orderId, String creatorFirstName, String creatorLastName,
                               OrderStatus orderStatus, BigDecimal packageWeight, BigDecimal packageSize,
                               String riderFirstName, String riderLastName,LocalDateTime creationDate, LocalDateTime estimatedArrival,
-                              VehicleType vehicleType, String vehicleLicensePlate, BigDecimal deliveryLatitude, BigDecimal deliveryLongitude, BigDecimal pickupLatitude, BigDecimal pickupLongitude) {
+                              VehicleType vehicleType, String vehicleLicensePlate, BigDecimal deliveryLatitude, BigDecimal deliveryLongitude, BigDecimal pickupLatitude, BigDecimal pickupLongitude,
+                              String pickupCity, String pickupProvince, String deliveryCity, String deliveryProvince, String trackingCode, Long riderId) {
         this.orderId = orderId;
         this.creatorFirstName = creatorFirstName;
         this.creatorLastName = creatorLastName;
@@ -47,6 +56,12 @@ public class OrderDetailResponse {
         this.deliveryLongitude = deliveryLongitude;
         this.pickupLatitude = pickupLatitude;
         this.pickupLongitude = pickupLongitude;
+        this.pickupCity = pickupCity;
+        this.pickupProvince = pickupProvince;
+        this.deliveryCity = deliveryCity;
+        this.deliveryProvince = deliveryProvince;
+        this.trackingCode = trackingCode;
+        this.riderId = riderId;
     }
 
     public Long getOrderId() {
@@ -176,4 +191,22 @@ public class OrderDetailResponse {
     public void setDeliveryLatitude(BigDecimal deliveryLatitude) {
         this.deliveryLatitude = deliveryLatitude;
     }
+    
+    public String getPickupCity() { return pickupCity; }
+    public void setPickupCity(String pickupCity) { this.pickupCity = pickupCity; }
+    
+    public String getPickupProvince() { return pickupProvince; }
+    public void setPickupProvince(String pickupProvince) { this.pickupProvince = pickupProvince; }
+    
+    public String getDeliveryCity() { return deliveryCity; }
+    public void setDeliveryCity(String deliveryCity) { this.deliveryCity = deliveryCity; }
+    
+    public String getDeliveryProvince() { return deliveryProvince; }
+    public void setDeliveryProvince(String deliveryProvince) { this.deliveryProvince = deliveryProvince; }
+    
+    public String getTrackingCode() { return trackingCode; }
+    public void setTrackingCode(String trackingCode) { this.trackingCode = trackingCode; }
+    
+    public Long getRiderId() { return riderId; }
+    public void setRiderId(Long riderId) { this.riderId = riderId; }
 }

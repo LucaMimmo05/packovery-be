@@ -124,6 +124,20 @@ public class OrderService {
         return toDetailResponse(order);
     }
 
+    public OrderDetailResponse getOrderByTrackingCode(String trackingCode) {
+        Order order = Order.find("trackingCode", trackingCode).firstResult();
+        if (order == null) {
+            // Try fallback to ID if it's numeric
+            try {
+                Long id = Long.parseLong(trackingCode);
+                return getOrderById(id);
+            } catch (NumberFormatException e) {
+                 throw new NotFoundException("Ordine con Tracking Code " + trackingCode + " non trovato.");
+            }
+        }
+        return toDetailResponse(order);
+    }
+
     private OrderResponse toResponse(Order order) {
         OrderLocation loc = order.getLocation();
         return new OrderResponse(
@@ -162,7 +176,13 @@ public class OrderService {
                 loc != null ? loc.getDeliveryLatitude(): null,
                 loc != null ? loc.getDeliveryLongitude() : null,
                 loc != null ? loc.getPickupLatitude() : null,
-                loc != null ? loc.getPickupLongitude() : null
+                loc != null ? loc.getPickupLongitude() : null,
+                loc != null ? loc.getPickupCity() : null,
+                loc != null ? loc.getPickupProvince() : null,
+                loc != null ? loc.getDeliveryCity() : null,
+                loc != null ? loc.getDeliveryProvince() : null,
+                order.getTrackingCode(),
+                rider != null ? rider.id : null
         );
     }
 }
