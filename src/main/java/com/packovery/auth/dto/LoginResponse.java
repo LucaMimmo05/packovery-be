@@ -1,22 +1,32 @@
 package com.packovery.auth.dto;
 
 public class LoginResponse {
-    private String token;
+    private String accessToken;
+    private String refreshToken;
     private String message;
     private String email;
 
-    public LoginResponse(String token, String message, String email) {
-        this.token = token;
+    public LoginResponse(String accessToken, String refreshToken, String message, String email) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
         this.message = message;
         this.email = email;
     }
 
-    public String getToken() {
-        return token;
+    public String getAccessToken() {
+        return accessToken;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public String getMessage() {
