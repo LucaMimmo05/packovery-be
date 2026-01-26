@@ -159,7 +159,7 @@ public class OrderService {
         Vehicle vehicle = order.getVehicle();
         OrderLocation loc = order.getLocation();
 
-        return new OrderDetailResponse(
+        OrderDetailResponse response = new OrderDetailResponse(
                 order.id,
                 creator != null ? creator.getFirstName() : null,
                 creator != null ? creator.getLastName() : null,
@@ -177,5 +177,21 @@ public class OrderService {
                 loc != null ? loc.getPickupLatitude() : null,
                 loc != null ? loc.getPickupLongitude() : null
         );
+        
+        // Populate additional fields manually since the constructor might not cover all of them
+        // or to ensure they are set
+        if (loc != null) {
+            response.setPickupCity(loc.getPickupCity());
+            response.setPickupProvince(loc.getPickupProvince());
+            response.setDeliveryCity(loc.getDeliveryCity());
+            response.setDeliveryProvince(loc.getDeliveryProvince());
+        }
+        
+        response.setTrackingCode(order.getTrackingCode());
+        if (rider != null) {
+            response.setRiderId(rider.id);
+        }
+        
+        return response;
     }
 }
