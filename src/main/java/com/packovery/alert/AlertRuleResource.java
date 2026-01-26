@@ -2,11 +2,13 @@ package com.packovery.alert;
 
 import com.packovery.alert.dto.CreateRuleRequest;
 import com.packovery.alert.dto.StatusRequest;
+import com.packovery.logging.LoggingService;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 @Path("/alert-rules")
 @Produces(MediaType.APPLICATION_JSON)
@@ -17,6 +19,16 @@ public class AlertRuleResource {
     @Inject
     AlertRuleService ruleService;
 
+    @Inject
+    LoggingService loggingService;
+
+    @Inject
+    JsonWebToken jwt;
+
+    public Long getUserId() {
+        return Long.valueOf(jwt.getClaim("userId"));
+    }
+
     @GET
     public Response getAll() {
         return Response.ok(ruleService.getAllRules()).build();
@@ -26,8 +38,7 @@ public class AlertRuleResource {
     public Response create(CreateRuleRequest request) {
         ruleService.createRule(request.name, request.description, request.type, request.threshold);
 
-        // TODO: Scommentare e ottenere l'id dell'user loggato tramite jwt
-        //loggingService.logAlertCreation(currentUserId, request.name);
+        loggingService.logAlertCreation(getUserId(), request.name);
         return Response.status(201).build();
     }
 

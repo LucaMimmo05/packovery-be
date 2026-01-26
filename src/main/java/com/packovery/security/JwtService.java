@@ -12,7 +12,7 @@ public class JwtService {
 
     public String generateToken(User user) {
         return Jwt.issuer("packovery")
-                .subject(user.getEmail())
+                .subject(String.valueOf(user.id))
                 .groups(Set.of(user.getRole().name()))
                 .expiresIn(Duration.ofHours(2))
                 .sign();
