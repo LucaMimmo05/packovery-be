@@ -1,6 +1,5 @@
 package com.packovery.common.exceptions;
 
-
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
@@ -12,12 +11,13 @@ public class GlobalExceptionMapper implements ExceptionMapper<Throwable> {
 
     @Override
     public Response toResponse(Throwable exception) {
-        log.error("Unexpected error occurred", exception);
+        log.error("Errore imprevisto", exception);
 
         ApiError apiError = new ApiError(
                 Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
-                "Internal Server Error",
-                "An unexpected error occurred");
+                "Errore Interno del Server",
+                "Si è verificato un errore imprevisto");
+
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                 .entity(apiError)
                 .build();

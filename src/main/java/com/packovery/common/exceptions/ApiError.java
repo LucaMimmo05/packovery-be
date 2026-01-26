@@ -1,18 +1,19 @@
 package com.packovery.common.exceptions;
 
-
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class ApiError {
     private int status;
     private String error;
     private String message;
-    private LocalDate timestamp = LocalDate.now();
+    private LocalDateTime timestamp = LocalDateTime.now();
+    private boolean success = false;
 
-    public ApiError(int status,String error, String message) {
+    public ApiError(int status, String error, String message) {
         this.status = status;
         this.error = error;
-        this.message = message;}
+        this.message = message;
+    }
 
 
 
@@ -40,11 +41,19 @@ public class ApiError {
         this.message = message;
     }
 
-    public LocalDate getTimestamp() {
+    public LocalDateTime getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDate timestamp) {
+    public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
     }
 }
