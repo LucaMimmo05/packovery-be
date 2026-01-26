@@ -39,6 +39,23 @@ public class AlertRuleService {
     }
 
     @Transactional
+    public boolean updateRule(String id, String name, String description, AlertType type, String threshold) {
+        AlertRule rule = repository.findById(new ObjectId(id));
+        if (rule == null) {
+            return false;
+        }
+
+        rule.name = name;
+        rule.description = description;
+        rule.type = type;
+        rule.timeThreshold = threshold;
+
+        repository.update(rule);
+
+        return true;
+    }
+
+    @Transactional
     public void deleteRule(String id) {
         repository.deleteById(new ObjectId(id));
     }

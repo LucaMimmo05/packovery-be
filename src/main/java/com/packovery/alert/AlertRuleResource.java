@@ -2,6 +2,7 @@ package com.packovery.alert;
 
 import com.packovery.alert.dto.CreateRuleRequest;
 import com.packovery.alert.dto.StatusRequest;
+import com.packovery.alert.dto.UpdateRuleRequest;
 import com.packovery.logging.LoggingService;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
@@ -52,6 +53,24 @@ public class AlertRuleResource {
     @Path("/{id}/status")
     public Response updateStatus(@PathParam("id") String id, StatusRequest request) {
         ruleService.toggleStatus(id, request.status);
+        return Response.ok().build();
+    }
+
+    @PUT
+    @Path("/{id}")
+    public Response update(@PathParam("id") String id, UpdateRuleRequest request) {
+        boolean updated = ruleService.updateRule(
+                id,
+                request.name,
+                request.description,
+                request.type,
+                request.threshold
+        );
+
+        if (!updated) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         return Response.ok().build();
     }
 
