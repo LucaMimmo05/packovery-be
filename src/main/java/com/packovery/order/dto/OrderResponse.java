@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class OrderResponse {
-    private Long id;
+    private String trackingCode;
     private OrderStatus status;
     private String pickUpCity;
     private String pickUpProvince;
@@ -18,8 +18,8 @@ public class OrderResponse {
     private PackageSize size;
     private LocalDateTime creationDate;
 
-    public OrderResponse(Long id, OrderStatus status, String pickUpCity, String pickUpProvince, String deliveryCity, String deliveryProvince, PackageWeight weight, PackageSize size, LocalDateTime creationDate) {
-        this.id = id;
+    public OrderResponse(String trackingCode, OrderStatus status, String pickUpCity, String pickUpProvince, String deliveryCity, String deliveryProvince, PackageWeight weight, PackageSize size, LocalDateTime creationDate) {
+        this.trackingCode = trackingCode;
         this.status = status;
         this.pickUpCity = pickUpCity;
         this.pickUpProvince = pickUpProvince;
@@ -31,12 +31,12 @@ public class OrderResponse {
     }
 
 
-    public Long getId() {
-        return id;
+    public String getTrackingCode() {
+        return trackingCode;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setTrackingCode(String trackingCode) {
+        this.trackingCode = trackingCode;
     }
 
     public OrderStatus getStatus() {

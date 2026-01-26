@@ -1,5 +1,6 @@
 package com.packovery.user;
 
+import com.packovery.common.dto.ApiResponse;
 import com.packovery.user.dto.CreateUserRequest;
 import com.packovery.user.dto.UserResponse;
 import jakarta.annotation.security.RolesAllowed;
@@ -25,32 +26,10 @@ public class UserController {
         try {
             UserResponse user = userService.createUser(request);
             return Response.status(Response.Status.CREATED)
-                    .entity(user)
-                    .build();
-        } catch (WebApplicationException e) {
-            return Response.status(e.getResponse().getStatus())
-                    .entity(new ErrorResponse(e.getMessage()))
+                    .entity(ApiResponse.success("Utente creato con successo", user))
                     .build();
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(new ErrorResponse("Errore interno del server"))
-                    .build();
-        }
-    }
-
-    public static class ErrorResponse {
-        private String message;
-
-        public ErrorResponse(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
+            throw e;
         }
     }
 }

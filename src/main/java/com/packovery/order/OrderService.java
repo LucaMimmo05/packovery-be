@@ -156,7 +156,7 @@ public class OrderService {
         }
 
         return new OrderResponse(
-                order.id,
+                order.getTrackingCode(),
                 order.getStatus(),
                 pickUpCity,
                 pickUpProvince,

@@ -1,5 +1,6 @@
 package com.packovery.order;
 
+import com.packovery.common.dto.ApiResponse;
 import com.packovery.order.dto.OrderResponse;
 import com.packovery.order.dto.OrderDetailResponse;
 import com.packovery.order.dto.CreateOrderRequest;
@@ -30,19 +31,15 @@ public class OrderController {
         try {
             OrderDetailResponse order = orderService.createOrder(request);
             return Response.status(Response.Status.CREATED)
-                    .entity(order)
+                    .entity(ApiResponse.success("Ordine creato con successo", order))
                     .build();
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(new ErrorResponse("Errore nella creazione dell'ordine: " + e.getMessage()))
-                    .build();
+            throw e;
         }
     }
 
-
-
     @GET
-    public List<OrderResponse> getAllOrders(
+    public Response getAllOrders(
             @QueryParam("id") Long id,
             @QueryParam("status") OrderStatus status,
             @QueryParam("pickUpCity") String pickUpCity,
@@ -53,28 +50,29 @@ public class OrderController {
             @QueryParam("size") PackageSize size,
             @QueryParam("createdAt") String createdAt
             ) {
-        return orderService.getAllOrders(id, status, pickUpCity, pickUpProvince, deliveryCity, deliveryProvince, weight, size, createdAt);
+        try {
+            List<OrderResponse> orders = orderService.getAllOrders(
+                    id, status, pickUpCity, pickUpProvince,
+                    deliveryCity, deliveryProvince, weight, size, createdAt);
+
+            return Response.ok()
+                    .entity(ApiResponse.success("Ordini recuperati con successo", orders))
+                    .build();
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
     @GET
     @Path("/{id}")
-    public OrderDetailResponse getOrderById(@PathParam("id") Long id) {
-        return orderService.getOrderById(id);
-    }
-
-    public static class ErrorResponse {
-        private String message;
-
-        public ErrorResponse(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
+    public Response getOrderById(@PathParam("id") Long id) {
+        try {
+            OrderDetailResponse order = orderService.getOrderById(id);
+            return Response.ok()
+                    .entity(ApiResponse.success("Ordine recuperato con successo", order))
+                    .build();
+        } catch (Exception e) {
+            throw e;
         }
     }
 }
