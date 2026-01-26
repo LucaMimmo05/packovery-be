@@ -176,6 +176,24 @@ public class DataSeeder {
             LocalDateTime.now().minusMinutes(45),
             PackageSize.M, PackageWeight.M
         );
+
+         // Order 6: Bari -> Lecce - CANCELLED
+         createOrder("TEST-BA-006", OrderStatus.CANCELLED, sender, null, null,
+            "Bari", "BA", new BigDecimal("41.1171"), new BigDecimal("16.8719"),
+            "Lecce", "LE", new BigDecimal("40.3515"), new BigDecimal("18.1750"),
+            LocalDateTime.now().minusDays(1),
+            PackageSize.S, PackageWeight.S
+        );
+
+         // Order 7: Palermo -> Catania - FAILED
+         User rider5 = createUser("rider5@test.com", "Giovanni", "Neri", UserRole.RIDER);
+         Vehicle vehicle5 = createVehicle(rider5, VehicleType.VAN, "TEST-PLATE-005");
+         createOrder("TEST-PA-007", OrderStatus.FAILED, sender, rider5, vehicle5,
+            "Palermo", "PA", new BigDecimal("38.1157"), new BigDecimal("13.3615"),
+            "Catania", "CT", new BigDecimal("37.5079"), new BigDecimal("15.0830"),
+            LocalDateTime.now().minusHours(5),
+            PackageSize.L, PackageWeight.L
+        );
          
          // Setup Rider 4 position (Intermedio tra Torino e Asti - es. vicino Chieri/Poirino)
          setupRiderLocation(rider4.id, 44.9500, 7.8500);
