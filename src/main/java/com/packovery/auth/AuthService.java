@@ -4,6 +4,8 @@ import com.packovery.auth.dto.BlockedResponse;
 import com.packovery.auth.dto.ForgotPasswordRequest;
 import com.packovery.auth.dto.LoginResponse;
 import com.packovery.auth.dto.ResetPasswordRequest;
+import com.packovery.common.dto.ApiResponse;
+import com.packovery.common.exceptions.ApiError;
 import com.packovery.common.enums.UserStatus;
 import com.packovery.common.exceptions.UserBlockedException;
 import com.packovery.security.JwtService;
@@ -143,43 +145,76 @@ public class AuthService {
 
     public Response requestPasswordReset(ForgotPasswordRequest request) {
         User user = findUserByEmail(request.getEmail());
-        if (user == null) return Response.status(Response.Status.NOT_FOUND).entity("Email Non Trovata").build();
+        if (user == null) {
+            ApiError error = new ApiError(
+                    Response.Status.NOT_FOUND.getStatusCode(),
+                    "Non Trovato",
+                    "Email non trovata"
+            );
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(error)
+                    .build();
+        }
 
         String otp = otpService.generateOtp(user.getEmail());
         try{
             emailService.sendOtpEmail(user.getEmail(), otp);
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Errore nell'invio dell'email").build();
+            ApiError error = new ApiError(
+                    Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+                    "Errore Interno del Server",
+                    "Errore nell'invio dell'email"
+            );
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(error)
+                    .build();
         }
 
-        return Response.ok().build();
+        return Response.ok()
+                .entity(ApiResponse.success("Email di reset password inviata con successo"))
+                .build();
     }
 
     @Transactional
     public Response resetPassword(ResetPasswordRequest request) {
         if (!otpService.hasActiveResetRequest(request.getEmail())) {
-            return Response.status(400)
-                    .entity("Non è stata effettuata alcuna richiesta di reset password per questa email o la richiesta è scaduta.")
+            ApiError error = new ApiError(
+                    Response.Status.BAD_REQUEST.getStatusCode(),
+                    "Richiesta Non Valida",
+                    "Non è stata effettuata alcuna richiesta di reset password per questa email o la richiesta è scaduta"
+            );
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(error)
                     .build();
         }
 
         if (!otpService.verifyOtp(request.getEmail(), request.getOtp())) {
-            return Response.status(400)
-                    .entity("OTP non valido.")
+            ApiError error = new ApiError(
+                    Response.Status.BAD_REQUEST.getStatusCode(),
+                    "Richiesta Non Valida",
+                    "OTP non valido"
+            );
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(error)
                     .build();
         }
 
         User user = User.findByEmail(request.getEmail().toLowerCase());
         if (user == null) {
-            return Response.status(404)
-                    .entity("Utente non trovato.")
+            ApiError error = new ApiError(
+                    Response.Status.NOT_FOUND.getStatusCode(),
+                    "Non Trovato",
+                    "Utente non trovato"
+            );
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(error)
                     .build();
         }
 
         user.setPasswordHash(BcryptUtil.bcryptHash(request.getNewPassword()));
 
         return Response.ok()
-                .entity("Password reimpostata con successo.")
+                .entity(ApiResponse.success("Password reimpostata con successo"))
                 .build();
     }
 }
