@@ -2,12 +2,17 @@ package com.packovery.alert;
 
 import com.packovery.alert.dto.CreateIssueRequest;
 import com.packovery.alert.dto.ResolveIssueRequest;
+import com.packovery.common.enums.ActionType;
+import com.packovery.common.enums.EntityViewed;
+import com.packovery.logging.LoggingService;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+
+import java.util.Map;
 
 @Path("/alert-issues")
 @Produces(MediaType.APPLICATION_JSON)
@@ -19,13 +24,17 @@ public class AlertIssueResource {
     AlertIssueService issueService;
     @Inject
     JsonWebToken jwt;
+    @Inject
+    LoggingService loggingService;
 
     private Long getAdminIdFromToken() {
-        Object userIdClaim = jwt.getClaim("userId");
-        if (userIdClaim == null) {
+        String subject = jwt.getSubject();
+        if (subject == null) return 0L;
+        try {
+            return Long.valueOf(subject);
+        } catch (NumberFormatException e) {
             return 0L;
         }
-        return Long.valueOf(userIdClaim.toString());
     }
 
     @GET
@@ -52,6 +61,17 @@ public class AlertIssueResource {
         Long adminId = getAdminIdFromToken();
 
         issueService.resolveIssue(id, adminId, request.notes);
+
+        loggingService.logAction(
+                adminId,
+                ActionType.RESOLVE_ISSUE,
+                EntityViewed.ALERT,
+                Map.of(
+                        "issueId", id,
+                        "notes", request.notes != null ? request.notes : ""
+                )
+        );
+
         return Response.ok().build();
     }
 }

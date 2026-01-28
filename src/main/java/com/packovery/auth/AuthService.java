@@ -5,9 +5,12 @@ import com.packovery.auth.dto.ForgotPasswordRequest;
 import com.packovery.auth.dto.LoginResponse;
 import com.packovery.auth.dto.ResetPasswordRequest;
 import com.packovery.common.dto.ApiResponse;
+import com.packovery.common.enums.ActionType;
+import com.packovery.common.enums.EntityViewed;
 import com.packovery.common.exceptions.ApiError;
 import com.packovery.common.enums.UserStatus;
 import com.packovery.common.exceptions.UserBlockedException;
+import com.packovery.logging.LoggingService;
 import com.packovery.security.JwtService;
 import com.packovery.user.User;
 import io.quarkus.elytron.security.common.BcryptUtil;
@@ -21,7 +24,7 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-
+import java.util.Map;
 
 
 @ApplicationScoped
@@ -35,6 +38,9 @@ public class AuthService {
 
     @Inject
     EmailService emailService;
+
+    @Inject
+    LoggingService loggingService;
 
     @Transactional
     public LoginResponse login(String email, String password, String firstName, String lastName) {
@@ -71,6 +77,14 @@ public class AuthService {
 
         String token = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
+
+        loggingService.logAction(
+                user.id,
+                ActionType.LOGIN,
+                EntityViewed.APPLICATION, // <--- Usa questo al posto di USER
+                Map.of("method", "JWT", "email", user.getEmail())
+        );
+
         return new LoginResponse(token, refreshToken, "Login avvenuto con successo", user.getEmail());
     }
 
@@ -231,5 +245,14 @@ public class AuthService {
         return Response.ok()
                 .entity(ApiResponse.success("Password reimpostata con successo"))
                 .build();
+    }
+
+    public void logout(Long userId) {
+        loggingService.logAction(
+                userId,
+                ActionType.LOGOUT,
+                EntityViewed.APPLICATION,
+                Map.of("action", "USER_INITIATED_LOGOUT")
+        );
     }
 }

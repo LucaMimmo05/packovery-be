@@ -1,6 +1,9 @@
 package com.packovery.communication;
 
+import com.packovery.common.enums.ActionType;
+import com.packovery.common.enums.EntityViewed;
 import com.packovery.communication.dto.SendMessageRequest;
+import com.packovery.logging.LoggingService;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -10,6 +13,7 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.List;
+import java.util.Map;
 
 @Path("/communications")
 @Produces(MediaType.APPLICATION_JSON)
@@ -21,6 +25,8 @@ public class RiderCommunicationResource {
     RiderCommunicationService commService;
     @Inject
     JsonWebToken jwt;
+    @Inject
+    LoggingService loggingService;
 
     public Long getUserId() {
         String subject = jwt.getSubject();
@@ -39,7 +45,23 @@ public class RiderCommunicationResource {
     @RolesAllowed("CUSTOMER_CARE")
     @POST
     public Response sendMessage(SendMessageRequest request) {
-        commService.sendMessage(getUserId(), request.riderId, request.content, request.orderId);        return Response.status(201).build();
+        Long userId = getUserId();
+
+        if (userId == 0) return Response.status(Response.Status.UNAUTHORIZED).build();
+
+        commService.sendMessage(getUserId(), request.riderId, request.content, request.orderId);
+
+        loggingService.logAction(
+                userId,
+                ActionType.SEND_MESSAGE,
+                EntityViewed.RIDER,
+                Map.of(
+                        "riderId", request.riderId,
+                        "orderId", request.orderId != null ? request.orderId : "N/A"
+                )
+        );
+
+        return Response.status(201).build();
     }
 
     @PUT

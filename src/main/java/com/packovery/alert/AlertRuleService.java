@@ -59,4 +59,12 @@ public class AlertRuleService {
     public void deleteRule(String id) {
         repository.deleteById(new ObjectId(id));
     }
+
+    public AlertRule getRule(String id) {
+        try {
+            return repository.findById(new ObjectId(id));
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
 }

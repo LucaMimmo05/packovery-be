@@ -2,6 +2,7 @@ package com.packovery.auth;
 
 import com.packovery.auth.dto.*;
 import com.packovery.common.dto.ApiResponse;
+import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -10,6 +11,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 @Path("/api/auth")
 @Produces(MediaType.APPLICATION_JSON)
@@ -18,6 +20,9 @@ public class AuthController {
 
     @Inject
     AuthService authService;
+
+    @Inject
+    JsonWebToken jwt;
 
     @POST
     @Path("/login")
@@ -68,4 +73,23 @@ public class AuthController {
     public Response newPassword(@Valid  NewPasswordRequest request) {
         return authService.setNewPassword(request.getEmail(), request.getPassword());
    }
+
+    @POST
+    @Path("/logout")
+    @Authenticated
+    public Response logout() {
+        Long userId = getUserId();
+
+        if (userId != 0) {
+            authService.logout(userId);
+        }
+
+        return Response.ok(ApiResponse.success("Logout effettuato", null)).build();
+    }
+
+    private Long getUserId() {
+        String subject = jwt.getSubject();
+        if (subject == null) return 0L;
+        try { return Long.valueOf(subject); } catch (NumberFormatException e) { return 0L; }
+    }
 }

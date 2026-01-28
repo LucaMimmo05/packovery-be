@@ -22,8 +22,8 @@ public class LoggingService {
         userLog.entityViewed = entityViewed;
         userLog.eventTimestamp = Instant.now();
 
-        if (actionType == ActionType.CREATE) {
-           userLog.userSessionStart = Instant.now();
+        if (actionType == ActionType.LOGIN) {
+            userLog.userSessionStart = Instant.now();
         }
 
         userLog.metadata = details;
@@ -44,17 +44,5 @@ public class LoggingService {
             lastLogin.userSessionEnd = Instant.now();
             userLogRepository.update(lastLogin);
         }
-    }
-
-    public void logAlertCreation(Long userId, String alertTime) {
-        UserLog userLog = new UserLog();
-        userLog.userId = userId;
-        userLog.actionType = ActionType.CREATE;
-        userLog.entityViewed = EntityViewed.ALERT;
-        userLog.eventTimestamp = Instant.now();
-        userLog.alertCreationTime = Instant.now();
-        userLog.metadata = Map.of("alertTime", alertTime);
-
-        userLogRepository.persist(userLog);
     }
 }
