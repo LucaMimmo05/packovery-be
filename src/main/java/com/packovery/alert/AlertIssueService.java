@@ -1,6 +1,5 @@
 package com.packovery.alert;
 
-import com.packovery.common.enums.AlertType;
 import com.packovery.common.enums.IssueResolution;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -16,17 +15,32 @@ public class AlertIssueService {
     @Inject
     AlertIssueRepository repository;
 
+    @Inject
+    AlertRuleRepository ruleRepository;
+
     @Transactional
-    public void createIssue(String ruleId, Long orderId, String snapshotName, AlertType snapshotType) {
+    public void createIssue(String ruleId, Long orderId) {
+        if (existsOpenIssue(ruleId, orderId)) return;
+
+        AlertRule rule = ruleRepository.findById(new ObjectId(ruleId));
+        if (rule == null) return;
+
         AlertIssue issue = new AlertIssue();
         issue.alertId = ruleId;
         issue.issueRelatedOrderId = orderId;
-        issue.snapshotAlertName = snapshotName;
-        issue.snapshotAlertType = snapshotType;
+
+        issue.snapshotAlertName = rule.type.getDescription();
+        issue.snapshotAlertType = rule.type;
+
         issue.issueCreationTime = Instant.now();
         issue.resolution = IssueResolution.OPEN;
 
         repository.persist(issue);
+    }
+
+    public boolean existsOpenIssue(String ruleId, Long orderId) {
+        return repository.find("alertId = ?1 and issueRelatedOrderId = ?2 and resolution = ?3",
+                ruleId, orderId, IssueResolution.OPEN).count() > 0;
     }
 
     @Transactional

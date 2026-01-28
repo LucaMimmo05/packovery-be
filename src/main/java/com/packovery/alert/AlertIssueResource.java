@@ -51,7 +51,7 @@ public class AlertIssueResource {
 
     @POST
     public Response createManualIssue(CreateIssueRequest request) {
-        issueService.createIssue(request.ruleId, request.orderId, request.alertName, request.type);
+        issueService.createIssue(request.ruleId, request.orderId);
         return Response.status(201).build();
     }
 
